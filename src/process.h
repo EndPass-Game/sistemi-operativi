@@ -39,9 +39,6 @@ void initPcbs(void);
  */
 void freePcb(pcb_t *p);
 
-// Restituisce NULL se la pcbFree_h è vuota. Altrimenti rimuove un elemento dalla
-// pcbFree, inizializza tutti i campi (NULL/0) e restituisce l’elemento rimosso.
-
 /**
  * @brief Rimuove un elemento dalla pcbFree, inizializza tutti i campi 
  * (NULL/0) e restituisce l’elemento rimosso.

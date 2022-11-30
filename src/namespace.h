@@ -53,8 +53,6 @@ nsd_t *getNamespace(pcb_t *p, int type);
  */
 int addNamespace(pcb_t *p, nsd_t *ns);
 
-// Alloca un namespace di tipo type dalla lista corretta.
-
 /**
  * @brief Alloca un namespace di tipo type dalla lista corretta.
  * 
