@@ -1,8 +1,10 @@
 name: C/C++ formatter
 
 on:
+  push:
   pull_request:
       branches: [ main ]
+  
 
 jobs:
   lint:
@@ -22,12 +24,12 @@ jobs:
 
     - name: Run linter check
       id: linting
-      run: clang-format -style=file --dry-run -Werror $(find ./src -name '*.cpp') $(find ./src -name '*.hpp')
+      run: clang-format -style=file --dry-run -Werror $(find ./src -name '*.c') $(find ./include -name '*.h')
       continue-on-error: true
 
     - name: Run formatter on fail
       if: steps.linting.outcome != 'success'
-      run: clang-format -style=file -i --verbose $(find . -name '*.cpp') $(find . -name '*.hpp')
+      run: clang-format -style=file -i --verbose $(find . -name '*.c') $(find . -name '*.h')
 
     - name: Commit and Push files on fail
       if: steps.linting.outcome != 'success'
