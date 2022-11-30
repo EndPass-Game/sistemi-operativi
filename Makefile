@@ -1,8 +1,7 @@
-CC=mipsel-linux-gnu-gcc
-CFLAGS=-Wall -Werror -ffreestanding -nostdlib -nostdinc -mips1 -mabi=32 -mfp32 -mno-gpopt -fno-pic -G O -mno-abicalls
-INCLUDES=-I/usr/umps3 -I/usr/include
 
-LDFLAGS= -G O -nostdlib -T/usr/umps3/umpscore.ldscript
+compile: cmake
+	cd build && make
 
-TARGET=src/namespace.c 
-all: $(TARGET)
+cmake: CMakeLists.txt
+	@mkdir -p build
+	@cd build && cmake ..

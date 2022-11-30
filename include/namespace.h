@@ -1,8 +1,10 @@
-#pragma once
+#ifndef _NAMESPACE_H
+#define _NAMESPACE_H
 
 #include "list.h"
 #include "macros.h"
-#include "process.h"
+
+typedef struct pcb_t pcb_t; // forward declaration, solves circular dependency
 
 /* namespace descriptor data structure */
 typedef struct nsd_t {
@@ -67,3 +69,5 @@ nsd_t *allocNamespace(int type);
  * @param ns 
  */
 void freeNamespace(nsd_t *ns);  
+
+#endif // _NAMESPACE_H

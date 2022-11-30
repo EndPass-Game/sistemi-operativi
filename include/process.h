@@ -1,13 +1,20 @@
-#pragma once
+#ifndef _PROCESS_H
+#define _PROCESS_H
 
 #include "list.h"
 #include "macros.h"
 
+typedef struct nsd_t nsd_t; // forward declaration, solves circular dependency
+// #include "namespace.h"
+
 // TODO: sostituire questi seguenti typedef con le cose adeguate
 typedef int state_t;
 typedef int cpu_t;
-typedef int nsd_t;
 
+/**
+ * @brief Struttura dati che rappresenta un processo.
+ * PCB = Process Control Block
+ */
 typedef struct pcb_t {
     /* process queue */
     struct list_head p_next;
@@ -133,3 +140,5 @@ pcb_t* removeChild(pcb_t *p);
  * @return pcb_t* NULL se p non ha un padre, altrimenti l'elemento rimosso (cioè p)
  */
 pcb_t *outChild(pcb_t* p);
+
+#endif /* _PROCESS_H */

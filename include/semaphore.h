@@ -1,8 +1,11 @@
-#pragma once
+#ifndef _SEMAPHORE_H
+#define _SEMAPHORE_H
 
 #include "list.h"
 #include "macros.h"
-#include "process.h"
+
+typedef struct pcb_t pcb_t;  // forward declaration
+// #include "process.h"
 
 // TODO: sostituisci on struttura corretto
 struct hlist_node {
@@ -92,3 +95,5 @@ pcb_t* headBlocked(int *semAdd);
  * l’inizializzazione della struttura dati.
  */
 void initASH();
+
+#endif /* _SEMAPHORE_H */
