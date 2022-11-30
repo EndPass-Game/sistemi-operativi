@@ -5,17 +5,17 @@ int insertBlocked(int *semAdd, pcb_t *p) {
     return 0;
 }
 
-pcb_t* removeBlocked(int *semAdd) {
+pcb_t *removeBlocked(int *semAdd) {
     // TODO
     return NULL;
 }
 
-pcb_t* outBlocked(pcb_t *p) {
+pcb_t *outBlocked(pcb_t *p) {
     // TODO
     return NULL;
 }
 
-pcb_t* headBlocked(int *semAdd) {
+pcb_t *headBlocked(int *semAdd) {
     // TODO
     return NULL;
 }

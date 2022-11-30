@@ -22,8 +22,7 @@ void insertProcQ(struct list_head *head, pcb_t *p) {
     // TODO
 }
 
-
-pcb_t headProcQ(struct list_head* head) {
+pcb_t headProcQ(struct list_head *head) {
     // TODO
 
     // NOTE: automatically calls memcpy, this function should be implemented
@@ -46,16 +45,16 @@ int emptyChild(pcb_t *p) {
     return 0;
 }
 
-void insertChild(pcb_t *prnt,pcb_t *p) {
+void insertChild(pcb_t *prnt, pcb_t *p) {
     // TODO
 }
 
-pcb_t* removeChild(pcb_t *p) {
+pcb_t *removeChild(pcb_t *p) {
     // TODO
     return NULL;
 }
 
-pcb_t *outChild(pcb_t* p) {
+pcb_t *outChild(pcb_t *p) {
     // TODO
     return NULL;
 }
