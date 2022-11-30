@@ -24,6 +24,9 @@ typedef struct pcb_t {
     nsd_t *p_namespaces[MAX_TYPES]; // ACTIVE namespace for each type 
 } pcb_t, *pcb_PTR;
 
+list_head pcbFree_h;
+pcb_t pcbFree_table[MAX_PROC];
+
 
 /**
  * @brief Inizializza la lista pcbFree in modo da contenere tutti gli elementi della
