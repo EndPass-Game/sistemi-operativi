@@ -40,8 +40,8 @@ add_executable(${EXEC_NAME}
 )
 
 target_include_directories(${EXEC_NAME} 
-    PUBLIC "include"
-    PUBLIC "/usr/include/umps3"
+    PRIVATE "include"
+    PRIVATE "/usr/include/umps3"
 )
 
 set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
