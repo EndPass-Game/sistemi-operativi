@@ -1,7 +1,7 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
-typedef unsigned int size_t;
+#include "types.h"  // size_t
 
 /**
  * @brief Copies n bytes from src to dest, own implementation of memcpy
