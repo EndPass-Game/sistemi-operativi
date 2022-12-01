@@ -10,7 +10,13 @@
  * @brief Struttura dati che rappresenta un processo.
  * PCB = Process Control Block
  */
-typedef struct pcb_t ProcessBlock; 
+typedef struct pcb_t ProcessCtrlBlock; 
+
+typedef struct ProcessBlockList {
+    ProcessCtrlBlock pcb;
+    struct list_head list;
+} ProcessBlockList;
+
 
 /**
  * @brief Inizializza la lista pcbFree in modo da contenere tutti gli elementi della
