@@ -13,8 +13,3 @@ cmake: CMakeLists.txt
 
 clean:
 	cd $(OUTDIR) && make clean
-
-	# while in the cmake is not fixed, use those cleans
-	rm $(OUTDIR)/phase1.kernel.elf.core.umps 
-	rm $(OUTDIR)/phase1.kernel.elf.stab.umps
-

@@ -15,7 +15,7 @@ set (CMAKE_EXE_LINKER_FLAGS "-G 0 -nostdlib -T${UMPSDIR}/umpscore.ldscript -m el
 # https://cmake.org/pipermail/cmake/2014-August/058268.html
 # CMAKE uses gcc to link, but this gcc can´t link, so we need to overwrite this behaviour
 set(CMAKE_C_LINK_EXECUTABLE
-    "<CMAKE_LINKER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+    "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
 )
 
 SET (EXEC_NAME "phase1.kernel.elf") 
@@ -33,22 +33,18 @@ add_custom_command(
 
 file(GLOB_RECURSE SOURCES "src/*.c")
 
-add_executable(${EXEC_NAME} ${SOURCES}
-${CMAKE_CURRENT_BINARY_DIR}/crtso.o
-${CMAKE_CURRENT_BINARY_DIR}/libumps.o
+add_executable(${EXEC_NAME} 
+    ${SOURCES}
+    ${CMAKE_CURRENT_BINARY_DIR}/crtso.o
+    ${CMAKE_CURRENT_BINARY_DIR}/libumps.o
 )
 
 target_include_directories(${EXEC_NAME} 
-PUBLIC "include"
-PUBLIC "/usr/include/umps3"
+    PUBLIC "include"
+    PUBLIC "/usr/include/umps3"
 )
 
-# also clean custom commands and core and stab files
-# TODO: phases1.kernel.elf is not deleted
-set_directory_properties(ADDITIONAL_MAKE_CLEAN_FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/crtso.o
-    ${CMAKE_CURRENT_BINARY_DIR}/libumps.o
+set_property(DIRECTORY PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/phase1.kernel.elf.core.umps  
     ${CMAKE_CURRENT_BINARY_DIR}/phase1.kernel.elf.stab.umps
 )
-
