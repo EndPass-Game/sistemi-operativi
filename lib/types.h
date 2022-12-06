@@ -14,20 +14,18 @@ typedef int bool;
 #endif
 
 struct list_head {
-	struct list_head *next, *prev;
+    struct list_head *next, *prev;
 };
 
 #ifndef u32
 typedef unsigned int u32;
 #endif
 struct hlist_head {
-	struct hlist_node *first;
+    struct hlist_node *first;
 };
 
 struct hlist_node {
-	struct hlist_node *next, **pprev;
+    struct hlist_node *next, **pprev;
 };
-
-
 
 #endif

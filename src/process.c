@@ -1,6 +1,7 @@
+#include "process.h"
+
 #include <container_of.h>
 
-#include "process.h"
 #include "macros.h"
 
 // TODO: queste variabili globali non possono essere definite in un file

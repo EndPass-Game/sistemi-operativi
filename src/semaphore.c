@@ -17,7 +17,6 @@ struct list_head semdFree_h;
  */
 struct list_head semd_h;
 
-
 int insertBlocked(int *semAdd, pcb_t *p) {
     // TODO
     return 0;

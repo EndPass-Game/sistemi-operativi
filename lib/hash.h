@@ -49,28 +49,24 @@
 #ifndef HAVE_ARCH__HASH_32
 #define __hash_32 __hash_32_generic
 #endif
-static inline u32 __hash_32_generic(u32 val)
-{
-	return val * GOLDEN_RATIO_32;
+static inline u32 __hash_32_generic(u32 val) {
+    return val * GOLDEN_RATIO_32;
 }
 
-static inline u32 hash_32(u32 val, unsigned int bits)
-{
-	/* High bits are more random, so use them. */
-	return __hash_32(val) >> (32 - bits);
+static inline u32 hash_32(u32 val, unsigned int bits) {
+    /* High bits are more random, so use them. */
+    return __hash_32(val) >> (32 - bits);
 }
 
-static inline u32 hash_ptr(const void *ptr, unsigned int bits)
-{
-	return hash_32((unsigned long)ptr, bits);
+static inline u32 hash_ptr(const void *ptr, unsigned int bits) {
+    return hash_32((unsigned long) ptr, bits);
 }
 
 /* This really should be called fold32_ptr; it does no hashing to speak of. */
-static inline u32 hash32_ptr(const void *ptr)
-{
-	unsigned long val = (unsigned long)ptr;
+static inline u32 hash32_ptr(const void *ptr) {
+    unsigned long val = (unsigned long) ptr;
 
-	return (u32)val;
+    return (u32) val;
 }
 
 #endif /* _LINUX_HASH_H */
