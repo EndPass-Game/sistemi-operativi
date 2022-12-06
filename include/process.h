@@ -83,9 +83,9 @@ void insertProcQ(struct list_head *head, pcb_t *p);
  * @brief Peek alla testa della lista, SENZA MODIFICARLA
  *
  * @param head
- * @return pcb_t la testa della coda dei processi da head, NULL se la coda non ha elementi.
+ * @return pcb_t *la testa della coda dei processi da head, NULL se la coda non ha elementi.
  */
-pcb_t headProcQ(struct list_head *head);
+pcb_t *headProcQ(struct list_head *head);
 
 /**
  * @brief Rimuove il primo elemento dalla coda dei processi puntata da head. e lo restituisce.

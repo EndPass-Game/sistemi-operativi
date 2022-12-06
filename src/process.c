@@ -22,12 +22,9 @@ void insertProcQ(struct list_head *head, pcb_t *p) {
     // TODO
 }
 
-pcb_t headProcQ(struct list_head *head) {
+pcb_t *headProcQ(struct list_head *head) {
     // TODO
-
-    // NOTE: automatically calls memcpy, this function should be implemented
-    // and imported in the main file, so that at linking stage it's defined.
-    return *allocPcb();
+    return NULL;
 }
 
 pcb_t *removeProcQ(struct list_head *head) {
