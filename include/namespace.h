@@ -1,32 +1,13 @@
 #ifndef _NAMESPACE_H
 #define _NAMESPACE_H
 
-#include "list.h"
+#include <pandos_types.h>
+#include <list.h>
+
 #include "macros.h"
 
-typedef struct pcb_t pcb_t;  // forward declaration, solves circular dependency
-
 /* namespace descriptor data structure */
-typedef struct nsd_t {
-    int n_type;
-    struct list_head n_link;
-} nsd_t;
-
-/**
- * @brief Namespace table
- * diversi array, uno per tipo di namespace, di NSD
- */
-nsd_t type_nsd[MAX_PROC];
-
-/**
- * @brief Lista dei NSD di tipo type liberi o inutilizzati.
- */
-list_head type_nsFree_h;
-
-/**
- * @brief Lista dei namespace di tipo type attivi.
- */
-list_head type_nsList_h;
+typedef nsd_t Namespace;
 
 /**
  * @brief Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato

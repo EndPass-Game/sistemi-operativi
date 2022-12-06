@@ -1,5 +1,24 @@
 #include "namespace.h"
 
+// TODO: queste variabili globali non possono essere definite in un file
+// header, scoprire il motivo.
+
+/**
+ * @brief Namespace table
+ * diversi array, uno per tipo di namespace, di NSD
+ */
+nsd_t type_nsd[MAX_PROC];
+
+/**
+ * @brief Lista dei NSD di tipo type liberi o inutilizzati.
+ */
+struct list_head type_nsFree_h;
+
+/**
+ * @brief Lista dei namespace di tipo type attivi.
+ */
+struct list_head type_nsList_h;
+
 void initNamespaces() {
     // TODO
 }

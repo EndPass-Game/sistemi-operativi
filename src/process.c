@@ -1,5 +1,15 @@
 #include "process.h"
 
+// TODO: queste variabili globali non possono essere definite in un file
+// header, scoprire il motivo.
+
+struct list_head pcbFree_h;
+pcb_t pcbFree_table[MAX_PROC];
+
+void initPcbs() {
+    // TODO
+}
+
 void freePcb(pcb_t *p) {
     // TODO
 }

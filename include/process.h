@@ -1,38 +1,16 @@
 #ifndef _PROCESS_H
 #define _PROCESS_H
 
-#include "list.h"
+#include <pandos_types.h>
+#include <list.h>
+
 #include "macros.h"
-
-typedef struct nsd_t nsd_t;  // forward declaration, solves circular dependency
-// #include "namespace.h"
-
-// TODO: sostituire questi seguenti typedef con le cose adeguate
-typedef int state_t;
-typedef int cpu_t;
 
 /**
  * @brief Struttura dati che rappresenta un processo.
  * PCB = Process Control Block
  */
-typedef struct pcb_t {
-    /* process queue */
-    struct list_head p_next;
-
-    /* process tree fields */
-    struct pcb_t *p_parent;    // pointer to parent process
-    struct list_head p_child;  // list of children
-    struct list_head p_sib;    // sibling list
-
-    /* process status information */
-    state_t p_s;                     // processor state
-    cpu_t p_time;                    // cpu time used by proc
-    int *p_semAdd;                   // ptr to semaphore on which proc is blocked
-    nsd_t *p_namespaces[MAX_TYPES];  // ACTIVE namespace for each type
-} pcb_t, *pcb_PTR;
-
-list_head pcbFree_h;
-pcb_t pcbFree_table[MAX_PROC];
+typedef struct pcb_t ProcessBlock; 
 
 /**
  * @brief Inizializza la lista pcbFree in modo da contenere tutti gli elementi della

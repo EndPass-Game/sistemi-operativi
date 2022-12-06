@@ -1,19 +1,16 @@
 #ifndef _MACROS_H
 #define _MACROS_H
 
-#define MAX_PROC 20
-#define MAX_TYPES 10
-#define NULL ((void *) 0)
+#ifndef MAX_PROC
+    #define MAX_PROC 20
+#endif
 
-// terminal register defines
-#define ST_READY 1
-#define ST_BUSY 3
-#define ST_TRANSMITTED 5
+#ifndef MAX_TYPES
+    #define MAX_TYPES 10
+#endif
 
-#define CMD_ACK 1
-#define CMD_TRANSMIT 2
-
-#define CHAR_OFFSET 8
-#define TERM_STATUS_MASK 0xFF
+#ifndef NULL
+    #define NULL ((void *) 0)
+#endif
 
 #endif /* _MACROS_H */

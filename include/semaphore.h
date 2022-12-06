@@ -1,44 +1,15 @@
 #ifndef _SEMAPHORE_H
 #define _SEMAPHORE_H
 
-#include "list.h"
+#include <pandos_types.h>
+#include <list.h>
+
 #include "macros.h"
-
-typedef struct pcb_t pcb_t;  // forward declaration
-// #include "process.h"
-
-// TODO: sostituisci on struttura corretto
-struct hlist_node {
-    struct hlist_node *next, **pprev;
-};
 
 /**
  * @brief semaphore descriptor data structure
- *
  */
-typedef struct semd_t {
-    struct hlist_node s_link;
-    struct list_head s_freeLink;
-
-    /* Semaphore key */
-    int *s_key;
-
-    /* PCBs blocked on the semaphore */
-    struct list_head s_procQ;
-} semd_t;
-
-semd_t semd_table[MAX_PROC];
-
-/**
- * @brief Lista dei SEMD liberi o inutilizzati.
- */
-list_head semdFree_h;
-
-/**
- * @brief hash dei semafori attivi
- * (Active Semaphore Hash – ASH)
- */
-list_head semd_h;
+typedef semd_t Semaphore;
 
 /**
  * @brief Viene inserito il PCB puntato da p nella
