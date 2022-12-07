@@ -26,7 +26,7 @@ static void resetProcessorState(state_t *s);
 
 /**
  * @brief Get the Process Block List object corrisponente
- * al pcb_t puntato da p, 
+ * al pcb_t puntato da p,
  * @return NULL se non esiste tale puntatore, altrimenti
  * il puntatore alla ProcessBlockList corrispondente
  */
@@ -144,7 +144,7 @@ pcb_t *removeChild(ProcessCtrlBlock *p) {
 
     struct list_head *first_children_list = p->p_child.next;
     ProcessBlockList *first_child = container_of(first_children_list, ProcessBlockList, list);
-    list_del(first_children_list);  
+    list_del(first_children_list);
     return &first_child->pcb;
 }
 

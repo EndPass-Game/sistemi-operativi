@@ -57,7 +57,7 @@ int emptyProcQ(struct list_head *head);
 /**
  * @brief Inserisce l’elemento puntato da p nella coda dei processi puntata da head.
  *  se p è invalido (e.g. non esiste tale puntatore), la funzione non fa niente.
- * 
+ *
  * @param head
  * @param p il  pcb da inserire
  */
