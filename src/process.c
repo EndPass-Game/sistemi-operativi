@@ -24,7 +24,7 @@ static void resetProcessorState(state_t *s);
 
 void initPcbs(void) {
     for (int i = 0; i < MAX_PROC; i++) {
-        reset(&pcbFree_table->pcb);
+        reset(&pcbFree_table[i].pcb);
         list_add(&pcbFree_table[i].list, &pcbFree_h);
     }
 }
