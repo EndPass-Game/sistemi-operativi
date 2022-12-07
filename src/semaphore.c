@@ -1,14 +1,15 @@
 #include "semaphore.h"
 
+#include "process.h"  // ProcessCtrlBlock
+
 // TODO: queste variabili globali non possono essere definite in un file
 // header, scoprire il motivo.
 
-semd_t semd_table[MAX_PROC];
+Semaphore semd_table[MAX_PROC];
 
 /**
  * @brief Lista dei SEMD liberi o inutilizzati.
  */
-
 struct list_head semdFree_h;
 
 /**
@@ -17,22 +18,22 @@ struct list_head semdFree_h;
  */
 struct list_head semd_h;
 
-int insertBlocked(int *semAdd, pcb_t *p) {
+int insertBlocked(int *semAdd, ProcessCtrlBlock *p) {
     // TODO
     return 0;
 }
 
-pcb_t *removeBlocked(int *semAdd) {
+ProcessCtrlBlock *removeBlocked(int *semAdd) {
     // TODO
     return NULL;
 }
 
-pcb_t *outBlocked(pcb_t *p) {
+ProcessCtrlBlock *outBlocked(ProcessCtrlBlock *p) {
     // TODO
     return NULL;
 }
 
-pcb_t *headBlocked(int *semAdd) {
+ProcessCtrlBlock *headBlocked(int *semAdd) {
     // TODO
     return NULL;
 }

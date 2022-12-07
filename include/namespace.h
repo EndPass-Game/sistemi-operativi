@@ -9,6 +9,11 @@
 /* namespace descriptor data structure */
 typedef nsd_t Namespace;
 
+typedef struct NamespaceList {
+    Namespace *namespace;
+    list_head list;
+} NamespaceList;
+
 /**
  * @brief Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato
  * una volta sola durante l’inizializzazione della struttura dati.
