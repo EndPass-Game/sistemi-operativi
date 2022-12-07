@@ -56,16 +56,17 @@ int emptyProcQ(struct list_head *head);
 
 /**
  * @brief Inserisce l’elemento puntato da p nella coda dei processi puntata da head.
- *
+ *  se p è invalido (e.g. non esiste tale puntatore), la funzione non fa niente.
+ * 
  * @param head
- * @param p
+ * @param p il  pcb da inserire
  */
 void insertProcQ(struct list_head *head, pcb_t *p);
 
 /**
  * @brief Peek alla testa della lista, SENZA MODIFICARLA
  *
- * @param head
+ * @param head la sentinella della lista
  * @return pcb_t *la testa della coda dei processi da head, NULL se la coda non ha elementi.
  */
 pcb_t *headProcQ(struct list_head *head);
