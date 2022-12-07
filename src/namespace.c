@@ -18,7 +18,7 @@ LIST_HEAD(namespace_free_list);
 /**
  * @brief Lista dei namespace di tipo type attivi.
  */
-struct list_head active_type_nsd[MAX_TYPES];
+LIST_HEAD(active_type_ns);
 
 /**
  * @brief set to default the given namespace
@@ -31,21 +31,22 @@ void initNamespaces() {
         list_add(&type_nsd->list, &namespace_free_list);
     }
 
-    for (int i = 0; i < MAX_TYPES; i++) {
-        INIT_LIST_HEAD(active_type_nsd);
-    }
 }
 
 nsd_t *getNamespace(pcb_t *p, int type) {
-    struct list_head *curr = &active_type_nsd[type];
+    Namespace *namespace = NULL;
+    for (int i = 0; i < NS_TYPE_MAX; i++) {
+        for (int j = 0; j < MAX_PROC; j++) {
+            if (p->namespaces[i] == &type_nsd[j].list) {
+                namespace = type_nsd[j].namespace;
+                break;
+            }
+        }
 
-    struct list_head *pos = NULL;
-    list_for_each(pos, curr) {
-        ProcessBlockList *pcb_list = container_of(p, ProcessBlockList, list);
-        if (pos == &pcb_list->list)
+        if (namespace != NULL) break;
     }
 
-    return NULL;
+    return namespace;
 }
 int addNamespace(pcb_t *p, nsd_t *ns) {
     // TODO
