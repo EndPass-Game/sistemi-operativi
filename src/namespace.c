@@ -37,7 +37,8 @@ nsd_t *getNamespace(pcb_t *p, int type) {
     Namespace *namespace = NULL;
     for (int i = 0; i < NS_TYPE_MAX; i++) {
         for (int j = 0; j < MAX_PROC; j++) {
-            if (p->namespaces[i] == &type_nsd[j].list) {
+            if (p->namespaces[i] == &type_nsd[j].list && 
+            type == type_nsd[j].namespace->n_type) {
                 namespace = type_nsd[j].namespace;
                 break;
             }
