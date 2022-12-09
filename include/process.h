@@ -6,11 +6,16 @@
 
 #include "macros.h"
 
-/**
- * @brief Struttura dati che rappresenta un processo.
- * PCB = Process Control Block
- */
-typedef struct pcb_t ProcessBlock; 
+// ritorna il pcb_list_t * associato al list_head puntato da ptr
+#define container_of_pcb(ptr) (container_of(ptr, pcb_list_t, list))
+
+// ritorna il pcb_list_t * associato al pcb_t* puntato da ptr
+#define container_of_pcb_data(ptr) (container_of(ptr, pcb_list_t, pcb))
+
+typedef struct pcb_list_t {
+    pcb_t pcb;
+    struct list_head list;
+} pcb_list_t;
 
 /**
  * @brief Inizializza la lista pcbFree in modo da contenere tutti gli elementi della
@@ -21,14 +26,13 @@ void initPcbs(void);
 
 /**
  * @brief Inserisce il PCB puntato da p nella lista dei PCB liberi (pcbFree_h)
- *
- * @param p
+ * Si assume che il pointer p non sia già libero
  */
 void freePcb(pcb_t *p);
 
 /**
  * @brief Rimuove un elemento dalla pcbFree, inizializza tutti i campi
- * (NULL/0) e restituisce l’elemento rimosso.
+ * (NULL/0) e le liste a vuote (punta a se stesso) e restituisce l’elemento rimosso.
  *
  * @return pcb_t* NULL se la pcbFree_h è vuota. altrimenti l'elemento rimosso.
  */
@@ -74,7 +78,7 @@ pcb_t *headProcQ(struct list_head *head);
 pcb_t *removeProcQ(struct list_head *head);
 
 /**
- * @brief Rimuove il PCB puntato da p dalla coda dei processi puntata da head. Se p non è presente
+ * @brief Rimuove il PCB puntato da p dalla coda dei processi puntata da head.
  *
  * @param head
  * @param p una posizione arbitraria all'interno della coda
