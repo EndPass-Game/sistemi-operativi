@@ -11,3 +11,8 @@ puntatore a un pcb_t.
 
 ## process
 la lista quando è allocata ha i concatenatori messi a 0.
+
+
+## Semaphore
+
+assumiamo che un semaforo se allocato ha sempre almeno un processo che aspetta su di essa.

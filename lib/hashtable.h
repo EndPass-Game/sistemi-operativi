@@ -30,6 +30,8 @@
 #define hash_min(val, bits)							\
 	hash_32(val, bits)
 
+
+
 static inline void __hash_init(struct hlist_head *ht, unsigned int sz)
 {
 	unsigned int i;

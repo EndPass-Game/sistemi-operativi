@@ -1,6 +1,9 @@
 #ifndef _TYPES_H
 #define _TYPES_H
-// #define NULL ((void *)0)
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif 
 
 #ifndef bool
 typedef int bool;
