@@ -7,19 +7,18 @@
  *
  ****************************************************************************/
 
-#include <umps3/umps/types.h>
-#include "pandos_const.h"
 #include <list.h>
+#include <umps3/umps/types.h>
 
+#include "pandos_const.h"
 
 /* PID namespace */
 #define NS_PID 0
 #define NS_TYPE_LAST NS_PID
 #define NS_TYPE_MAX (NS_TYPE_LAST + 1)
 
-typedef signed int   cpu_t;
+typedef signed int cpu_t;
 typedef unsigned int memaddr;
-
 
 typedef struct nsd_t {
     /* Namespace type */
@@ -35,13 +34,13 @@ typedef struct pcb_t {
     struct list_head p_list;
 
     /* process tree fields */
-    struct pcb_t    *p_parent; /* ptr to parent	*/
-    struct list_head p_child;  /* children list */
-    struct list_head p_sib;    /* sibling list  */
+    struct pcb_t *p_parent;   /* ptr to parent	*/
+    struct list_head p_child; /* children list */
+    struct list_head p_sib;   /* sibling list  */
 
     /* process status information */
-    state_t p_s;    /* processor state */
-    cpu_t   p_time; /* cpu time used by proc */
+    state_t p_s;  /* processor state */
+    cpu_t p_time; /* cpu time used by proc */
 
     /* Pointer to the semaphore the process is currently blocked on */
     int *p_semAdd;
@@ -49,7 +48,6 @@ typedef struct pcb_t {
     /* Namespace list */
     nsd_t *namespaces[NS_TYPE_MAX];
 } pcb_t, *pcb_PTR;
-
 
 /* semaphore descriptor (SEMD) data structure */
 typedef struct semd_t {

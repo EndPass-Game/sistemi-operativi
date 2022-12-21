@@ -1,7 +1,8 @@
+#include "semaphore.h"
+
 #include <hashtable.h>
 
 #include "process.h"  // container of pcb data
-#include "semaphore.h"
 
 semd_t semd_table[MAX_PROC];
 
@@ -24,7 +25,7 @@ static semd_t *find_sem(int *semAdd);
 /**
  * @brief setta il semaforo a valore di default
  */
-static void reset(semd_t * sem);
+static void reset(semd_t *sem);
 
 /**
  * @brief allocate a semaphore
@@ -38,7 +39,6 @@ static semd_t *alloc_semd();
  * @return True se è rimosso, altrimenti false
  */
 static bool free_semd_ifempty(semd_t *sem);
-
 
 int insertBlocked(int *semAdd, pcb_t *p) {
     semd_t *sem = find_sem(semAdd);
@@ -54,7 +54,7 @@ int insertBlocked(int *semAdd, pcb_t *p) {
     struct list_head *p_list = &container_of_pcb_data(p)->list;
     list_add_tail(p_list, &sem->s_procq);
     p->p_semAdd = semAdd;
-    
+
     return false;
 }
 
@@ -81,10 +81,10 @@ pcb_t *outBlocked(pcb_t *p) {
     if (sem == NULL) return NULL;
 
     struct list_head *pos = NULL;
-    struct list_head *p_list = NULL; 
+    struct list_head *p_list = NULL;
     list_for_each(pos, &sem->s_procq) {
-        if(&container_of_pcb(pos)->pcb == p) {
-            p_list = pos; 
+        if (&container_of_pcb(pos)->pcb == p) {
+            p_list = pos;
         }
     }
 
@@ -103,9 +103,9 @@ pcb_t *outBlocked(pcb_t *p) {
 
 pcb_t *headBlocked(int *semAdd) {
     semd_t *sem = find_sem(semAdd);
-    if(sem == NULL || list_empty(&sem->s_procq)){
+    if (sem == NULL || list_empty(&sem->s_procq)) {
         return NULL;
-    }else{
+    } else {
         return &container_of_pcb(sem->s_procq.next)->pcb;
     }
 }
@@ -117,14 +117,14 @@ void initASH() {
 }
 
 static semd_t *find_sem(int *semAdd) {
-    struct hlist_head *sem_hlist = &semd_h[hash_min((u32)semAdd, HASH_BITS(semd_h))];
+    struct hlist_head *sem_hlist = &semd_h[hash_min((u32) semAdd, HASH_BITS(semd_h))];
     if (!hlist_empty(sem_hlist)) {
-        // prendiamo il primo elemento dobbiamo chekcare 
+        // prendiamo il primo elemento dobbiamo chekcare
         // che sia vermaente uguale a semAdd, risolve collisioni di hash.
         struct hlist_node *pro = NULL;
         hlist_for_each(pro, sem_hlist) {
-            semd_t * sem = container_of(pro, semd_t, s_link);
-            if(sem->s_key==semAdd)
+            semd_t *sem = container_of(pro, semd_t, s_link);
+            if (sem->s_key == semAdd)
                 return sem;
         }
     }

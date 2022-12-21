@@ -1,4 +1,5 @@
 #include "process.h"
+
 #include "utils.h"
 // TODO: queste variabili globali non possono essere definite in un file
 // header, scoprire il motivo.
@@ -10,7 +11,7 @@ pcb_list_t pcbFree_table[MAX_PROC];
  * @brief Resettiamo il Process Control Block(pcb), settando tutti i
  * campi a 0.
  */
-static void reset(pcb_list_t* pcb);
+static void reset(pcb_list_t *pcb);
 
 void initPcbs() {
     for (int i = 0; i < MAX_PROC; i++) {
@@ -50,15 +51,15 @@ void insertProcQ(struct list_head *head, pcb_t *p) {
 
 pcb_t *headProcQ(struct list_head *head) {
     if (emptyProcQ(head)) return NULL;
-    
+
     return &(container_of_pcb(head->next)->pcb);
 }
 
 pcb_t *removeProcQ(struct list_head *head) {
-    if(list_empty(head)) {
+    if (list_empty(head)) {
         return NULL;
     }
-    
+
     pcb_list_t *next_elem = container_of_pcb(head->next);
     list_del(&next_elem->list);
     return &next_elem->pcb;
@@ -98,13 +99,11 @@ pcb_t *removeChild(pcb_t *p) {
     if (list_empty(&p->p_child)) {
         return NULL;
     }
-    
+
     pcb_list_t *child_list = container_of_pcb(p->p_child.next);
     list_del(&child_list->list);
     return &child_list->pcb;
 }
-
-
 
 pcb_t *outChild(pcb_t *p) {
     if (p->p_parent == NULL) {
@@ -131,12 +130,12 @@ pcb_t *outChild(pcb_t *p) {
     return NULL;
 }
 
-static void reset(pcb_list_t* pcb_list) {
+static void reset(pcb_list_t *pcb_list) {
     memset(pcb_list, 0, sizeof(pcb_list_t));
     INIT_LIST_HEAD(&pcb_list->list);
 
     pcb_t *pcb = &pcb_list->pcb;
-    
+
     INIT_LIST_HEAD(&pcb->p_child);
     INIT_LIST_HEAD(&pcb->p_list);
     INIT_LIST_HEAD(&pcb->p_sib);

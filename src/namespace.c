@@ -1,4 +1,5 @@
 #include "namespace.h"
+
 #include "process.h"
 
 /**
@@ -9,7 +10,7 @@ nsd_t type_nsd[NS_TYPE_MAX][MAX_PROC];
 
 /**
  * @brief Lista dei NSD di tipo type liberi o inutilizzati.
-    */
+ */
 struct list_head type_nsFree_h[NS_TYPE_MAX];
 
 /**
@@ -56,8 +57,8 @@ nsd_t *allocNamespace(int type) {
     if (type < 0 || type >= NS_TYPE_MAX) {
         return NULL;
     }
-    
-    if(list_empty(&type_nsFree_h[type])) {
+
+    if (list_empty(&type_nsFree_h[type])) {
         return NULL;
     }
 

@@ -2,9 +2,9 @@
 #ifndef _LINUX_CONTAINER_OF_H
 #define _LINUX_CONTAINER_OF_H
 
-#define offsetof(TYPE, MEMBER)	__builtin_offsetof(TYPE, MEMBER)
+#define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
 
-#define typeof_member(T, m)	typeof(((T*)0)->m)
+#define typeof_member(T, m) typeof(((T *) 0)->m)
 
 /**
  * container_of - cast a member of a structure out to the containing structure
@@ -33,4 +33,4 @@
 	IS_ERR_OR_NULL(__mptr) ? ERR_CAST(__mptr) :			\
 		((type *)(__mptr - offsetof(type, member))); })
 
-#endif	/* _LINUX_CONTAINER_OF_H */
+#endif /* _LINUX_CONTAINER_OF_H */

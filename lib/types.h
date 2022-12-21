@@ -2,8 +2,8 @@
 #define _TYPES_H
 
 #ifndef NULL
-#define NULL ((void *)0)
-#endif 
+#define NULL ((void *) 0)
+#endif
 
 #ifndef bool
 typedef int bool;
@@ -17,20 +17,18 @@ typedef int bool;
 #endif
 
 struct list_head {
-	struct list_head *next, *prev;
+    struct list_head *next, *prev;
 };
 
 #ifndef u32
 typedef unsigned int u32;
 #endif
 struct hlist_head {
-	struct hlist_node *first;
+    struct hlist_node *first;
 };
 
 struct hlist_node {
-	struct hlist_node *next, **pprev;
+    struct hlist_node *next, **pprev;
 };
-
-
 
 #endif

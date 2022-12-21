@@ -1,8 +1,8 @@
 #ifndef _PROCESS_H
 #define _PROCESS_H
 
-#include <pandos_types.h>
 #include <list.h>
+#include <pandos_types.h>
 
 #include "macros.h"
 

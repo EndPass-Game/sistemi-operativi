@@ -15,33 +15,31 @@
 
 #include <pandos_const.h>
 #include <pandos_types.h>
-
 #include <umps3/umps/libumps.h>
+
+#include "namespace.h"
 #include "process.h"
 #include "semaphore.h"
-#include "namespace.h"
-
 
 #define MAXPROC 20
-#define MAXSEM  MAXPROC
-#define MAXNS   MAXPROC
+#define MAXSEM MAXPROC
+#define MAXNS MAXPROC
 
-char   okbuf[2048]; /* sequence of progress messages */
-char   errbuf[128]; /* contains reason for failing */
-char   msgbuf[128]; /* nonrecoverable error message before shut down */
-int    sem[MAXSEM];
-int    onesem;
+char okbuf[2048]; /* sequence of progress messages */
+char errbuf[128]; /* contains reason for failing */
+char msgbuf[128]; /* nonrecoverable error message before shut down */
+int sem[MAXSEM];
+int onesem;
 pcb_t *procp[MAXPROC], *p, *q, *firstproc, *lastproc, *midproc;
 nsd_t *pid_ns, *pid_ns2;
-char  *mp = okbuf;
-
+char *mp = okbuf;
 
 #define TRANSMITTED 5
-#define ACK         1
-#define PRINTCHR    2
-#define CHAROFFSET  8
-#define STATUSMASK  0xFF
-#define TERM0ADDR   0x10000254
+#define ACK 1
+#define PRINTCHR 2
+#define CHAROFFSET 8
+#define STATUSMASK 0xFF
+#define TERM0ADDR 0x10000254
 
 typedef unsigned int devreg;
 
@@ -53,17 +51,17 @@ devreg termstat(memaddr *stataddr) {
 /* This function prints a string on specified terminal and returns TRUE if
  * print was successful, FALSE if not   */
 unsigned int termprint(char *str, unsigned int term) {
-    memaddr     *statusp;
-    memaddr     *commandp;
-    devreg       stat;
-    devreg       cmd;
+    memaddr *statusp;
+    memaddr *commandp;
+    devreg stat;
+    devreg cmd;
     unsigned int error = FALSE;
 
     if (term < DEVPERINT) {
         /* terminal is correct */
         /* compute device register field addresses */
-        statusp  = (devreg *)(TERM0ADDR + (term * DEVREGSIZE) + (TRANSTATUS * DEVREGLEN));
-        commandp = (devreg *)(TERM0ADDR + (term * DEVREGSIZE) + (TRANCOMMAND * DEVREGLEN));
+        statusp = (devreg *) (TERM0ADDR + (term * DEVREGSIZE) + (TRANSTATUS * DEVREGLEN));
+        commandp = (devreg *) (TERM0ADDR + (term * DEVREGSIZE) + (TRANCOMMAND * DEVREGLEN));
 
         /* test device status */
         stat = termstat(statusp);
@@ -72,7 +70,7 @@ unsigned int termprint(char *str, unsigned int term) {
 
             /* print cycle */
             while (*str != EOS && !error) {
-                cmd       = (*str << CHAROFFSET) | PRINTCHR;
+                cmd = (*str << CHAROFFSET) | PRINTCHR;
                 *commandp = cmd;
 
                 /* busy waiting */
@@ -97,7 +95,6 @@ unsigned int termprint(char *str, unsigned int term) {
     return (!error);
 }
 
-
 /* This function placess the specified character string in okbuf and
  *	causes the string to be written out to terminal0 */
 void addokbuf(char *strp) {
@@ -108,12 +105,11 @@ void addokbuf(char *strp) {
     termprint(tstrp, 0);
 }
 
-
 /* This function placess the specified character string in errbuf and
  *	causes the string to be written out to terminal0.  After this is done
  *	the system shuts down with a panic message */
 void adderrbuf(char *strp) {
-    char *ep    = errbuf;
+    char *ep = errbuf;
     char *tstrp = strp;
 
     while ((*ep++ = *strp++) != '\0')
@@ -123,8 +119,6 @@ void adderrbuf(char *strp) {
 
     PANIC();
 }
-
-
 
 int main(void) {
     int i;
@@ -252,7 +246,6 @@ int main(void) {
     for (i = 0; i < 10; i++)
         freePcb(procp[i]);
 
-
     /* check ASH */
     initASH();
     addokbuf("Initialized active semaphore hash   \n");
@@ -338,13 +331,13 @@ int main(void) {
     addokbuf("addNamespace test #1 started\n");
     pid_ns = allocNamespace(NS_PID);
     if (pid_ns == NULL)
-            adderrbuf("Unexpected null on allocNS");
+        adderrbuf("Unexpected null on allocNS");
     if (addNamespace(procp[3], pid_ns) != TRUE)
-            adderrbuf("addNamespace: Unexpected FALSE");
+        adderrbuf("addNamespace: Unexpected FALSE");
     if (getNamespace(procp[3], NS_PID) == getNamespace(procp[0], NS_PID))
-            adderrbuf("getNamespace: Unexpected root namespace for process 3");
+        adderrbuf("getNamespace: Unexpected root namespace for process 3");
     if (getNamespace(procp[3], NS_PID) != pid_ns)
-            adderrbuf("getNamespace: Unexpected namespace for process 3");
+        adderrbuf("getNamespace: Unexpected namespace for process 3");
     addokbuf("addNamespace: test ok\n");
 
     addokbuf("addNamespace(2): test started\n");
@@ -353,9 +346,9 @@ int main(void) {
     addNamespace(procp[1], pid_ns);
 
     if (getNamespace(procp[2], NS_PID) == NULL)
-	    adderrbuf("Child namespace is the root one");
+        adderrbuf("Child namespace is the root one");
     if (getNamespace(procp[2], NS_PID) != pid_ns)
-            adderrbuf("Child namespace is not the one of the parent!");
+        adderrbuf("Child namespace is not the one of the parent!");
     addokbuf("addNamespace(2): test ok\n");
 
     pid_ns2 = allocNamespace(NS_PID);
@@ -363,13 +356,13 @@ int main(void) {
     addNamespace(procp[1], pid_ns2);
 
     if (getNamespace(procp[0], NS_PID) != NULL)
-            adderrbuf("Root namespace changed!");
+        adderrbuf("Root namespace changed!");
     if (getNamespace(procp[1], NS_PID) != pid_ns2)
-            adderrbuf("Parent namespace did not changed!");
+        adderrbuf("Parent namespace did not changed!");
     if (getNamespace(procp[2], NS_PID) != pid_ns2)
-            adderrbuf("Child namespace did not changed!");
+        adderrbuf("Child namespace did not changed!");
     if (getNamespace(procp[3], NS_PID) != pid_ns)
-            adderrbuf("Other process namespace changed!");
+        adderrbuf("Other process namespace changed!");
 
     addokbuf("Namespace module ok\n");
     addokbuf("So Long and Thanks for All the Fish\n");
