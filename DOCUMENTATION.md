@@ -16,3 +16,7 @@ la lista quando è allocata ha i concatenatori messi a 0.
 ## Semaphore
 
 assumiamo che un semaforo se allocato ha sempre almeno un processo che aspetta su di essa.
+
+## Namespace
+`addnamespace` assumiamo che i figli siano inizializzati bene, altrimenti potrebbe succedere che andiamo in ricorsione infinita.
+Quindi non dovrebbe mai fare errore.

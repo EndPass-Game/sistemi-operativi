@@ -6,8 +6,10 @@
 
 #include "macros.h"
 
-/* namespace descriptor data structure */
-typedef nsd_t Namespace;
+typedef nsd_list_t {
+    nsd_t nsd;
+    struct list_head list;
+} nsd_list_t;
 
 /**
  * @brief Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato
