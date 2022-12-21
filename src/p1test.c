@@ -2,7 +2,7 @@
  *
  *	Test program for the modules ASH and pcbQueues (phase 1).
  *
- *	Produces progress messages on terminal 0 in addition
+ *	Produces progress mesages on terminal 0 in addition
  *		to the array ``okbuf[]''
  *		Error messages will also appear on terminal 0 in
  *		addition to the array ``errbuf[]''.
@@ -124,21 +124,6 @@ void adderrbuf(char *strp) {
     PANIC();
 }
 
-
-void print_numebr(char *buffer,int numebr){
-    int n = numebr;
-    int log10 = 0;
-
-    while(n) {
-        n /= 10;
-        log10++;
-    }
-    for(int i=log10;i>0;i--) {
-        buffer[i]= '0'+numebr%10;
-        numebr/=10;
-    }
-    addokbuf(buffer);
-}
 
 
 int main(void) {
@@ -285,27 +270,12 @@ int main(void) {
         if (insertBlocked(&sem[i], procp[i]))
             adderrbuf("insertBlocked(2): unexpected TRUE   ");
     }
+
     /* check if semaphore descriptors are returned to free list */
     p = removeBlocked(&sem[11]);
-    
-    for (int i = 0; i < MAXPROC; i++) {
-        addokbuf("this is addr: " );
-        print_numebr("                   \n", (int) procp[i]);
-    }
-    addokbuf("this is last  ");
-    print_numebr("              \n", (int) p);
-
-
-    if (p == procp[11]) {
-        addokbuf("yes its the same");
-    } else if (p == NULL) {
-        adderrbuf("P is null");
-    }
-
     if (insertBlocked(&sem[11], p))
         adderrbuf("removeBlocked: fails to return to free list   ");
 
-    addokbuf("remove blocked\n");
     if (insertBlocked(&onesem, procp[9]) == FALSE)
         adderrbuf("insertBlocked: inserted more than MAXPROC   ");
 

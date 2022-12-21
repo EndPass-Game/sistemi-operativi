@@ -19,14 +19,14 @@ struct list_head type_nsList_h[NS_TYPE_MAX];
 
 void initNamespaces() {
     for (int i = 0; i < NS_TYPE_MAX; i++) {
+        INIT_LIST_HEAD(&type_nsFree_h[i]);
+        INIT_LIST_HEAD(&type_nsList_h[i]);
+
         for (int j = 0; j < MAX_PROC; j++) {
             type_nsd[i][j].n_type = i;
             list_add(&type_nsd[i][j].n_link, &type_nsFree_h[i]);
         }
     }
-    // for (int i = 0; i < MAX_PROC; i++) {
-    //     list_add(&type_nsd[i].n_link, &type_nsFree_h);
-    // }
 }
 
 nsd_t *getNamespace(pcb_t *p, int type) {
@@ -53,17 +53,22 @@ int addNamespace(pcb_t *p, nsd_t *ns) {
 }
 
 nsd_t *allocNamespace(int type) {
-    if (isEmpty(type_nsFree_h)) {
+    if (type < 0 || type >= NS_TYPE_MAX) {
+        return NULL;
+    }
+    
+    if(list_empty(&type_nsFree_h[type])) {
         return NULL;
     }
 
-    struct list_head *next = &type_nsFree_h.next;
+    struct list_head *next = type_nsFree_h[type].next;
 
     list_del(next);
-    list_add(next, &type_nsList_h);
+    list_add(next, &type_nsList_h[type]);
     return container_of(next, nsd_t, n_link);
 }
 
 void freeNamespace(nsd_t *ns) {
-    list_del(ns);
+    list_del(&ns->n_link);
+    list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }

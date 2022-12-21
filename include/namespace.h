@@ -6,11 +6,6 @@
 
 #include "macros.h"
 
-typedef nsd_list_t {
-    nsd_t nsd;
-    struct list_head list;
-} nsd_list_t;
-
 /**
  * @brief Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato
  * una volta sola durante l’inizializzazione della struttura dati.
@@ -27,7 +22,7 @@ void initNamespaces();
 nsd_t *getNamespace(pcb_t *p, int type);
 
 /**
- * @brief Associa al processo p e a tutti I suoi figli il namespace ns.
+ * @brief Associa al processo p e a tutti i suoi figli il namespace ns.
  *
  * @param p
  * @param ns
