@@ -1,9 +1,15 @@
 #include "process.h"
 #include "utils.h"
-// TODO: queste variabili globali non possono essere definite in un file
-// header, scoprire il motivo.
 
+/**
+ * @brief Lista dei PCB liberi o inutilizzati.
+ */
 LIST_HEAD(pcbFree_h);
+
+/**
+ * @brief PCB table che contiene tutti i PCB presenti nel programma
+ * allocati staticamente.
+ */
 pcb_list_t pcbFree_table[MAX_PROC];
 
 /**
@@ -19,6 +25,7 @@ void initPcbs() {
 }
 
 void freePcb(pcb_t *p) {
+    // NOTA: il reset è fatto in fase di allocazione
     pcb_list_t *pcb_list = container_of_pcb_data(p);
     list_add(&pcb_list->list, &pcbFree_h);
 }
@@ -45,13 +52,14 @@ int emptyProcQ(struct list_head *head) {
 
 void insertProcQ(struct list_head *head, pcb_t *p) {
     pcb_list_t *list = container_of_pcb_data(p);
+    // aggiungiamo in coda così da implementare una queue
     list_add_tail(&list->list, head);
 }
 
 pcb_t *headProcQ(struct list_head *head) {
     if (emptyProcQ(head)) return NULL;
     
-    return &(container_of_pcb(head->next)->pcb);
+    return &container_of_pcb(head->next)->pcb;
 }
 
 pcb_t *removeProcQ(struct list_head *head) {
@@ -88,36 +96,34 @@ int emptyChild(pcb_t *p) {
     return list_empty(&p->p_child);
 }
 
-void insertChild(pcb_t *prnt, pcb_t *p) {
-    pcb_list_t *to_add_list = container_of_pcb_data(p);
-    p->p_parent = prnt;
-    list_add_tail(&to_add_list->list, &prnt->p_child);
+void insertChild(pcb_t *parent, pcb_t *child) {
+    pcb_list_t *to_add_list = container_of_pcb_data(child);
+    child->p_parent = parent;
+    list_add_tail(&to_add_list->list, &parent->p_child);
 }
 
-pcb_t *removeChild(pcb_t *p) {
-    if (list_empty(&p->p_child)) {
+pcb_t *removeChild(pcb_t *parent) {
+    if (list_empty(&parent->p_child)) {
         return NULL;
     }
     
-    pcb_list_t *child_list = container_of_pcb(p->p_child.next);
+    pcb_list_t *child_list = container_of_pcb(parent->p_child.next);
     list_del(&child_list->list);
     return &child_list->pcb;
 }
 
-
-
-pcb_t *outChild(pcb_t *p) {
-    if (p->p_parent == NULL) {
+pcb_t *outChild(pcb_t *child) {
+    if (child->p_parent == NULL) {
         return NULL;
     }
 
-    pcb_list_t *parent = container_of_pcb_data(p->p_parent);
+    pcb_list_t *parent = container_of_pcb_data(child->p_parent);
     struct list_head *child_head = &parent->pcb.p_child;
 
     struct list_head *pos = NULL;
     struct list_head *p_list = NULL;
     list_for_each(pos, child_head) {
-        if (p == &container_of_pcb(pos)->pcb) {
+        if (child == &container_of_pcb(pos)->pcb) {
             p_list = pos;
             break;
         }
@@ -125,7 +131,7 @@ pcb_t *outChild(pcb_t *p) {
 
     if (p_list != NULL) {
         list_del(p_list);
-        return p;
+        return child;
     }
 
     return NULL;
