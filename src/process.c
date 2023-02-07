@@ -27,6 +27,12 @@ void initPcbs() {
 void freePcb(pcb_t *p) {
     // NOTA: il reset è fatto in fase di allocazione
     pcb_list_t *pcb_list = container_of_pcb_data(p);
+
+    // rimuovi dalla coda dei processi se è stato inserito
+    if (!list_empty(&pcb_list->list)) {
+        list_del(&pcb_list->list);
+    }
+
     list_add(&pcb_list->list, &pcbFree_h);
 }
 
@@ -37,7 +43,7 @@ pcb_t *allocPcb() {
     struct list_head *next = pcbFree_h.next;
     list_del(next);
 
-    pcb_list_t *p_list = container_of_pcb(next);
+    pcb_list_t *p_list = container_of_pcb_list(next);
     reset(p_list);
     return &p_list->pcb;
 }
@@ -53,13 +59,14 @@ int emptyProcQ(struct list_head *head) {
 void insertProcQ(struct list_head *head, pcb_t *p) {
     pcb_list_t *list = container_of_pcb_data(p);
     // aggiungiamo in coda così da implementare una queue
+    
     list_add_tail(&list->list, head);
 }
 
 pcb_t *headProcQ(struct list_head *head) {
     if (emptyProcQ(head)) return NULL;
     
-    return &container_of_pcb(head->next)->pcb;
+    return &container_of_pcb_list(head->next)->pcb;
 }
 
 pcb_t *removeProcQ(struct list_head *head) {
@@ -67,7 +74,7 @@ pcb_t *removeProcQ(struct list_head *head) {
         return NULL;
     }
     
-    pcb_list_t *next_elem = container_of_pcb(head->next);
+    pcb_list_t *next_elem = container_of_pcb_list(head->next);
     list_del(&next_elem->list);
     return &next_elem->pcb;
 }
@@ -77,7 +84,7 @@ pcb_t *outProcQ(struct list_head *head, pcb_t *p) {
 
     struct list_head *pos = NULL;
     list_for_each(pos, head) {
-        if (p == &container_of_pcb(pos)->pcb) {
+        if (p == &container_of_pcb_list(pos)->pcb) {
             present = true;
             break;
         }
@@ -97,9 +104,9 @@ int emptyChild(pcb_t *p) {
 }
 
 void insertChild(pcb_t *parent, pcb_t *child) {
-    pcb_list_t *to_add_list = container_of_pcb_data(child);
+    struct list_head *sib_head = &child->p_sib;
     child->p_parent = parent;
-    list_add_tail(&to_add_list->list, &parent->p_child);
+    list_add_tail(sib_head, &parent->p_child);
 }
 
 pcb_t *removeChild(pcb_t *parent) {
@@ -107,9 +114,9 @@ pcb_t *removeChild(pcb_t *parent) {
         return NULL;
     }
     
-    pcb_list_t *child_list = container_of_pcb(parent->p_child.next);
-    list_del(&child_list->list);
-    return &child_list->pcb;
+    pcb_t *child_pcb = container_of(parent->p_child.next, pcb_t, p_sib);
+    list_del(&child_pcb->p_sib);
+    return &child_pcb;
 }
 
 pcb_t *outChild(pcb_t *child) {
@@ -123,7 +130,7 @@ pcb_t *outChild(pcb_t *child) {
     struct list_head *pos = NULL;
     struct list_head *p_list = NULL;
     list_for_each(pos, child_head) {
-        if (child == &container_of_pcb(pos)->pcb) {
+        if (child == &container_of_pcb_list(pos)->pcb) {
             p_list = pos;
             break;
         }
@@ -140,6 +147,7 @@ pcb_t *outChild(pcb_t *child) {
 static void reset(pcb_list_t* pcb_list) {
     memset(pcb_list, 0, sizeof(pcb_list_t));
     INIT_LIST_HEAD(&pcb_list->list);
+    INIT_LIST_HEAD(&pcb_list->sem_block);
 
     pcb_t *pcb = &pcb_list->pcb;
     

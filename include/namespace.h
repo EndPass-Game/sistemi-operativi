@@ -13,7 +13,7 @@
 void initNamespaces();
 
 /**
- * @brief Get the Namespace object
+ * @brief Ritorna il namespace di tipo type associato al processo p (o NULL).
  *
  * @param p
  * @param type
@@ -23,6 +23,7 @@ nsd_t *getNamespace(pcb_t *p, int type);
 
 /**
  * @brief Associa al processo p e a tutti i suoi figli il namespace ns.
+ * @warning assunzione, un figlio non può avere tra i child un suo ancestor
  *
  * @param p
  * @param ns

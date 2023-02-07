@@ -2,14 +2,13 @@
 #include "process.h"
 
 /**
- * @brief Namespace table
- * diversi array, uno per tipo di namespace, di NSD
+ * @brief Tabella dei namespace, sono diverse colonne ognuna per tipo di namespace (di NSD)
  */
 nsd_t type_nsd[NS_TYPE_MAX][MAX_PROC];
 
 /**
  * @brief Lista dei NSD di tipo type liberi o inutilizzati.
-    */
+ */
 struct list_head type_nsFree_h[NS_TYPE_MAX];
 
 /**
@@ -35,18 +34,20 @@ nsd_t *getNamespace(pcb_t *p, int type) {
             return p->namespaces[i];
         }
     }
+    
     return NULL;
+    // NOTA: possibile implementazione
+    // return p->namespace[type];
 }
 
-// assioma, un figlio non può avere tra i child un suo padre
 int addNamespace(pcb_t *p, nsd_t *ns) {
     int type = ns->n_type;
     p->namespaces[type] = ns;
 
     struct list_head *pos = NULL;
     list_for_each(pos, &p->p_child) {
-        pcb_list_t *pcb = container_of_pcb(pos);
-        addNamespace(&pcb->pcb, ns);
+        pcb_t *pcb = container_of(pos, pcb_t, p_sib);
+        addNamespace(pcb, ns);
     }
 
     return TRUE;

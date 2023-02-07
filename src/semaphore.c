@@ -3,6 +3,10 @@
 #include "process.h"  // container of pcb data
 #include "semaphore.h"
 
+/**
+ * @brief Semaphore table che contiene tutti i semafori presenti nel programma
+ * allocati staticamente.
+ */
 semd_t semd_table[MAX_PROC];
 
 /**
@@ -13,29 +17,30 @@ LIST_HEAD(semdFree_h);
 /**
  * @brief hash table dei semafori attivi
  * (Active Semaphore Hash – ASH)
+ * 2^5 = 32 maggiore di MAX_PROC
  */
 DEFINE_HASHTABLE(semd_h, 5);
 
 /**
- * @brief Cerchiamo il semaforo con chiave semAdd nella semd_table
+ * @brief ritorna il semaforo con chiave semAdd nella semd_table
  */
 static semd_t *find_sem(int *semAdd);
 
 /**
- * @brief setta il semaforo a valore di default
+ * @brief setta il semaforo al valore di default (null)
  */
 static void reset(semd_t * sem);
 
 /**
- * @brief allocate a semaphore
- * @return NULL if can't allocate, else resetted sem
+ * @brief alloca un semaforo
+ * @return NULL se non riesce ad allocare, altrimenti resetta il semaforo
  */
 static semd_t *alloc_semd();
 
 /**
- * @brief deallocate a semaphore solo se la coda
+ * @brief dealloca un semaforo solo se la coda
  * dei processi è vuota.
- * @return True se è rimosso, altrimenti false
+ * @return True se è stato rimosso, altrimenti false
  */
 static bool free_semd_ifempty(semd_t *sem);
 
@@ -51,8 +56,8 @@ int insertBlocked(int *semAdd, pcb_t *p) {
         hash_add(semd_h, &sem->s_link, (u32) sem->s_key);
     }
 
-    struct list_head *p_list = &container_of_pcb_data(p)->list;
-    list_add_tail(p_list, &sem->s_procq);
+    struct list_head *blocked_list = &container_of_pcb_data(p)->sem_block;
+    list_add_tail(blocked_list, &sem->s_procq);
     p->p_semAdd = semAdd;
     
     return false;
@@ -60,12 +65,12 @@ int insertBlocked(int *semAdd, pcb_t *p) {
 
 pcb_t *removeBlocked(int *semAdd) {
     semd_t *sem = find_sem(semAdd);
-    if (sem->s_key != semAdd) return NULL;
+    if (sem == NULL) return NULL;
 
-    if (sem != NULL && !list_empty(&sem->s_procq)) {
+    if (!list_empty(&sem->s_procq)) {
         struct list_head *next = sem->s_procq.next;
 
-        pcb_t *pcb = &container_of_pcb(next)->pcb;
+        pcb_t *pcb = &container_of_pcb_sem_block(next)->pcb;
         pcb->p_semAdd = NULL;
 
         list_del(next);
@@ -83,7 +88,7 @@ pcb_t *outBlocked(pcb_t *p) {
     struct list_head *pos = NULL;
     struct list_head *p_list = NULL; 
     list_for_each(pos, &sem->s_procq) {
-        if(&container_of_pcb(pos)->pcb == p) {
+        if(&container_of_pcb_sem_block(pos)->pcb == p) {
             p_list = pos; 
         }
     }
@@ -92,7 +97,7 @@ pcb_t *outBlocked(pcb_t *p) {
         list_del(p_list);
         free_semd_ifempty(sem);
 
-        pcb_t *pcb = &container_of_pcb(p_list)->pcb;
+        pcb_t *pcb = &container_of_pcb_sem_block(p_list)->pcb;
         pcb->p_semAdd = NULL;
 
         return pcb;
@@ -106,7 +111,7 @@ pcb_t *headBlocked(int *semAdd) {
     if(sem == NULL || list_empty(&sem->s_procq)){
         return NULL;
     }else{
-        return &container_of_pcb(sem->s_procq.next)->pcb;
+        return &container_of_pcb_sem_block(sem->s_procq.next)->pcb;
     }
 }
 
@@ -119,15 +124,16 @@ void initASH() {
 static semd_t *find_sem(int *semAdd) {
     struct hlist_head *sem_hlist = &semd_h[hash_min((u32)semAdd, HASH_BITS(semd_h))];
     if (!hlist_empty(sem_hlist)) {
-        // prendiamo il primo elemento dobbiamo chekcare 
-        // che sia vermaente uguale a semAdd, risolve collisioni di hash.
+        // prendiamo il primo elemento dobbiamo controllare 
+        // che sia veramente uguale a semAdd, risolve collisioni di hash.
         struct hlist_node *pro = NULL;
         hlist_for_each(pro, sem_hlist) {
             semd_t * sem = container_of(pro, semd_t, s_link);
-            if(sem->s_key==semAdd)
+            if(sem->s_key == semAdd)
                 return sem;
         }
     }
+    
     return NULL;
 }
 

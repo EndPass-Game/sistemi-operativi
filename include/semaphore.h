@@ -7,11 +7,6 @@
 #include "macros.h"
 
 /**
- * @brief semaphore descriptor data structure
- */
-typedef semd_t Semaphore;
-
-/**
  * @brief Viene inserito il PCB puntato da p nella
  * semAdd. Se il semaforo corrispondente non è
  * presente nella ASH, alloca un nuovo SEMD dalla
