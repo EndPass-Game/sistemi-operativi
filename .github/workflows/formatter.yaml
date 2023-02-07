@@ -29,7 +29,7 @@ jobs:
 
     - name: Run formatter on fail
       if: steps.linting.outcome != 'success'
-      run: clang-format -style=file -i --verbose $(find . -name '*.c') $(find . -name '*.h')
+      run: clang-format -style=file -i --verbose $(find ./src -name '*.c') $(find ./include -name '*.h')
 
     - name: Commit and Push files on fail
       if: steps.linting.outcome != 'success'
