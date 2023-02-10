@@ -17,9 +17,29 @@ void memset(void *ptr, char byte, u32 size);
  * la reinizializza a un valore valido, senza aver così problemi
  * di doppio delete.
  */
+
 static inline void list_delete_safe(struct list_head *list) {
     list_del(list);
     INIT_LIST_HEAD(list);
+}
+
+/**
+ * @brief garantisce che la lista `new` non sia concatenata in nessuna 
+ * altra lista prima di essere aggiunta in coda
+ */
+static inline void list_add_tail_safe(struct list_head *new, struct list_head* lista) {
+    list_delete_safe(new);
+    list_add_tail(new,lista);
+}
+
+
+/**
+ * @brief garantisce che la lista `new` non sia concatenata in nessuna 
+ * altra lista prima di essere aggiunta in lista
+ */
+static inline void list_add_safe(struct list_head *new, struct list_head *list) {
+    list_delete_safe(new);
+    list_add(new, list);
 }
 
 #endif  // _UTILS_H

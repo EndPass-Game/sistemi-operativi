@@ -56,18 +56,25 @@ int emptyProcQ(struct list_head *head) {
 }
 
 void insertProcQ(struct list_head *head, pcb_t *p) {
+    // nel caso in cui p fosse presente in una altra lista/coda di processi
+    // questo delete garantisce che l'altra lista non sia in stato invalidato
+    // dopo questo inserimento
+    list_del(&p->p_list);
+
     // aggiungiamo in coda così da implementare una queue
     list_add_tail(&p->p_list, head);
 }
 
 pcb_t *headProcQ(struct list_head *head) {
-    if (emptyProcQ(head)) return NULL;
-    
+    if (emptyProcQ(head)) {
+        return NULL;
+    }
+
     return container_of(head->next, pcb_t, p_list);
 }
 
 pcb_t *removeProcQ(struct list_head *head) {
-    if (list_empty(head)) {
+    if (emptyProcQ(head)) {
         return NULL;
     }
     
@@ -102,7 +109,7 @@ int emptyChild(pcb_t *p) {
 void insertChild(pcb_t *parent, pcb_t *child) {
     struct list_head *sib_head = &child->p_sib;
     child->p_parent = parent;
-    list_add_tail(sib_head, &parent->p_child);
+    list_add_tail_safe(sib_head, &parent->p_child);
 }
 
 pcb_t *removeChild(pcb_t *parent) {

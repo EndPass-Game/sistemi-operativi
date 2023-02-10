@@ -71,7 +71,7 @@ pcb_t *removeBlocked(int *semAdd) {
 
     if (!emptyProcQ(&sem->s_procq)) {
         struct list_head *next = sem->s_procq.next;
-        pcb_t *pcb =container_of(next, pcb_t, p_list);
+        pcb_t *pcb = container_of(next, pcb_t, p_list);
         pcb->p_semAdd = NULL;
 
         list_delete_safe(next);
@@ -160,7 +160,7 @@ static semd_t *alloc_semd() {
 }
 
 static bool free_semd_ifempty(semd_t *sem) {
-    if (list_empty(&sem->s_procq)) {
+    if (emptyProcQ(&sem->s_procq)) {
         hash_del(&sem->s_link);
         list_add(&sem->s_freelink, &semdFree_h);
         return true;

@@ -36,8 +36,9 @@ pcb_t *removeBlocked(int *semAdd);
 /**
  * @brief Rimuove il PCB puntato da p dalla coda del semaforo
  * su cui è bloccato (indicato da p->p_semAdd).
- * Se la* coda dei processi bloccati per il semaforo diventa
+ * Se la * coda dei processi bloccati per il semaforo diventa
  * vuota, rimuove il descrittore corrispondente dalla ASH e lo inserisce nella coda dei
+ * semafori liberi
  *
  * @param p il PCB da rimuovere
  * @return pcb_t* NULL se p non è presente nella coda dei processi bloccati associata al SEMD, altrimenti p

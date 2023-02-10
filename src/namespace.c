@@ -30,15 +30,13 @@ void initNamespaces() {
 }
 
 nsd_t *getNamespace(pcb_t *p, int type) {
-    for (int i = 0; i < NS_TYPE_MAX; i++) {
-        if (p->namespaces[i] != NULL && p->namespaces[i]->n_type == type) {
-            return p->namespaces[i];
-        }
+    // un processo può avere
+    // al massimo un namespace per tipo
+    if (p != NULL && type >= 0 && type < NS_TYPE_MAX) {
+        return p->namespaces[type];
     }
-    
+
     return NULL;
-    // NOTA: possibile implementazione alternativa:
-    // return p->namespace[type];
 }
 
 int addNamespace(pcb_t *p, nsd_t *ns) {
@@ -65,12 +63,12 @@ nsd_t *allocNamespace(int type) {
 
     struct list_head *next = type_nsFree_h[type].next;
 
-    list_delete_safe(next);
+    list_del(next);
     list_add(next, &type_nsList_h[type]);
     return container_of(next, nsd_t, n_link);
 }
 
 void freeNamespace(nsd_t *ns) {
-    list_delete_safe(&ns->n_link);
+    list_del(&ns->n_link);
     list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }

@@ -22,7 +22,8 @@ void freePcb(pcb_t *p);
 
 /**
  * @brief Rimuove un elemento dalla pcbFree, inizializza tutti i campi
- * (NULL/0) e le liste a vuote (punta a se stesso) e restituisce l’elemento rimosso.
+ * (NULL/0) e le liste a vuote (punta a se stesso) e restituisce l’elemento rimosso
+ * dalla lista dei pcb liberi.
  *
  * @return NULL se la pcbFree_h è vuota. altrimenti l'elemento rimosso.
  */
