@@ -1,5 +1,6 @@
 #include "namespace.h"
 #include "process.h"
+#include "utils.h"  // list_delete_safe
 
 /**
  * @brief Tabella dei namespace, sono diverse colonne ognuna per tipo di namespace (di NSD)
@@ -36,7 +37,7 @@ nsd_t *getNamespace(pcb_t *p, int type) {
     }
     
     return NULL;
-    // NOTA: possibile implementazione
+    // NOTA: possibile implementazione alternativa:
     // return p->namespace[type];
 }
 
@@ -64,12 +65,12 @@ nsd_t *allocNamespace(int type) {
 
     struct list_head *next = type_nsFree_h[type].next;
 
-    list_del(next);
+    list_delete_safe(next);
     list_add(next, &type_nsList_h[type]);
     return container_of(next, nsd_t, n_link);
 }
 
 void freeNamespace(nsd_t *ns) {
-    list_del(&ns->n_link);
+    list_delete_safe(&ns->n_link);
     list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }

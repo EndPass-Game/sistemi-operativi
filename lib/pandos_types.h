@@ -48,7 +48,7 @@ typedef struct pcb_t {
 
     /* Namespace list */
     nsd_t *namespaces[NS_TYPE_MAX];
-} pcb_t, *pcb_PTR;
+}   pcb_t, *pcb_PTR;
 
 
 /* semaphore descriptor (SEMD) data structure */

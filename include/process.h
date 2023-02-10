@@ -6,24 +6,6 @@
 
 #include "macros.h"
 
-// ritorna il pcb_list_t * associato al list_head puntato da ptr
-#define container_of_pcb_list(ptr) (container_of(ptr, pcb_list_t, list))
-
-// ritorna il pcb_list_t * associato al list_head puntato da ptr
-#define container_of_pcb_sem_block(ptr) (container_of(ptr, pcb_list_t, sem_block))
-
-// ritorna il pcb_list_t * associato al pcb_t* puntato da ptr
-#define container_of_pcb_data(ptr) (container_of(ptr, pcb_list_t, pcb))
-
-typedef struct pcb_list_t {
-    pcb_t pcb;
-    
-    // concatenatore per coda dei processi attivi, e processi liberi
-    struct list_head list;
-    
-    // concatenatore per il processo bloccato da un semaforo
-    struct list_head sem_block;  
-} pcb_list_t;
 
 /**
  * @brief Inizializza la lista pcbFree in modo da contenere tutti gli elementi della

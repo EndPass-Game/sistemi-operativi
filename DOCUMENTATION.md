@@ -2,14 +2,12 @@
 
 ## La struttura del progetto
 
-
 ### Divisione delle cartelle
 Raccontiamo del contenuto di ogni cartella:
 - `src`: sono presenti i sorgenti dei file con le funzioni da implementare.
-- `include`: sono presenti gli headers con all'interno le dichiarazioni delle funzioni sopracitate.
+- `include`: sono presenti gli headers con all'interno le dichiarazioni delle funzioni da implementare.
 - `lib`: sono presenti tutti gli headers delle librerie utilizzate nel progetto, presenti già tra i file iniziali del progetto, le quali sono state modificate durante lo svolgimento del progetto per risolvere un problema di definizione di `NULL`.
-- `build`: sarà una cartella creata in automatico in cui saranno presenti i file di output dopo la build
-
+- `build`: sarà una cartella creata in automatico in cui saranno presenti i file di output dopo l'operazione dis build.
 
 ### Divisione dei file
 Il progetto è suddiviso in 3 parti principali: lo sviluppo delle funzioni relative ai `PCB` implementate nel file `process.c`, lo sviluppo delle funzioni di gestione dei semafori implementate nel file `semaphore.c` e lo sviluppo delle funzioni di gestione del `namespace` implementate nel file `namespace.c`.
@@ -46,3 +44,12 @@ assumiamo che un semaforo se allocato ha sempre almeno un processo che aspetta s
 ### Namespace
 `addnamespace` assumiamo che i figli siano inizializzati bene, altrimenti potrebbe succedere che andiamo in ricorsione infinita.
 Quindi non dovrebbe mai fare errore.
+
+### Utilizzi di p_list
+il campo p_list è utilizzato come concatenatore in 3 liste principali:
+- lista dei pcb liberi
+- lista dei pcb bloccati su semafori
+- code dei processi, implementati tramite le liste.
+
+È importante assumere che queste liste siano tutti e tre mutualmente esclusive, in quanto altrimenti avremmo alcuni conflitti, che porterebbero a uno stato invalido.
+In particolare potremmo dire che un processo che sia fermo sulla lista dei semafori, sia in stato di *waiting*, mentre se è nella coda dei processi si potrebbe dire nello stato di *running*, mentre se è allocato e non è nella coda dei processi è in stato di *ready*.

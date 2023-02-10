@@ -1,7 +1,8 @@
 #include <hashtable.h>
 
-#include "process.h"  // container of pcb data
+#include "process.h"  // container of pcb data, and ProcQ functions
 #include "semaphore.h"
+#include "utils.h"  // list_delete_safe
 
 /**
  * @brief Semaphore table che contiene tutti i semafori presenti nel programma
@@ -44,7 +45,6 @@ static semd_t *alloc_semd();
  */
 static bool free_semd_ifempty(semd_t *sem);
 
-
 int insertBlocked(int *semAdd, pcb_t *p) {
     semd_t *sem = find_sem(semAdd);
     if (sem == NULL) {
@@ -56,8 +56,10 @@ int insertBlocked(int *semAdd, pcb_t *p) {
         hash_add(semd_h, &sem->s_link, (u32) sem->s_key);
     }
 
-    struct list_head *blocked_list = &container_of_pcb_data(p)->sem_block;
-    list_add_tail(blocked_list, &sem->s_procq);
+    // Se il pcb era presente in qualunque altra coda di processi,
+    // così sono sicuro che l'altra lista non rimanga in stato invalido
+    list_delete_safe(&p->p_list);
+    insertProcQ(&sem->s_procq, p);
     p->p_semAdd = semAdd;
     
     return false;
@@ -67,16 +69,16 @@ pcb_t *removeBlocked(int *semAdd) {
     semd_t *sem = find_sem(semAdd);
     if (sem == NULL) return NULL;
 
-    if (!list_empty(&sem->s_procq)) {
+    if (!emptyProcQ(&sem->s_procq)) {
         struct list_head *next = sem->s_procq.next;
-
-        pcb_t *pcb = &container_of_pcb_sem_block(next)->pcb;
+        pcb_t *pcb =container_of(next, pcb_t, p_list);
         pcb->p_semAdd = NULL;
 
-        list_del(next);
+        list_delete_safe(next);
         free_semd_ifempty(sem);
         return pcb;
     }
+
     return NULL;
 }
 
@@ -88,16 +90,16 @@ pcb_t *outBlocked(pcb_t *p) {
     struct list_head *pos = NULL;
     struct list_head *p_list = NULL; 
     list_for_each(pos, &sem->s_procq) {
-        if(&container_of_pcb_sem_block(pos)->pcb == p) {
-            p_list = pos; 
+        if (container_of(pos, pcb_t, p_list) == p) {
+            p_list = pos;
         }
     }
 
     if (p_list != NULL) {
-        list_del(p_list);
+        list_delete_safe(p_list);
         free_semd_ifempty(sem);
-
-        pcb_t *pcb = &container_of_pcb_sem_block(p_list)->pcb;
+        
+        pcb_t *pcb = container_of(p_list, pcb_t, p_list);
         pcb->p_semAdd = NULL;
 
         return pcb;
@@ -108,10 +110,10 @@ pcb_t *outBlocked(pcb_t *p) {
 
 pcb_t *headBlocked(int *semAdd) {
     semd_t *sem = find_sem(semAdd);
-    if(sem == NULL || list_empty(&sem->s_procq)){
+    if (sem == NULL || emptyProcQ(&sem->s_procq)) {
         return NULL;
-    }else{
-        return &container_of_pcb_sem_block(sem->s_procq.next)->pcb;
+    } else {
+        return container_of(sem->s_procq.next, pcb_t, p_list);
     }
 }
 
@@ -139,9 +141,9 @@ static semd_t *find_sem(int *semAdd) {
 
 static void reset(semd_t *sem) {
     sem->s_key = NULL;
-    INIT_LIST_HEAD(&sem->s_procq);
-    INIT_HLIST_NODE(&sem->s_link);
+    mkEmptyProcQ(&sem->s_procq);
     INIT_LIST_HEAD(&sem->s_freelink);
+    INIT_HLIST_NODE(&sem->s_link);
 }
 
 static semd_t *alloc_semd() {
@@ -150,7 +152,7 @@ static semd_t *alloc_semd() {
     }
 
     struct list_head *next = semdFree_h.next;
-    list_del(next);
+    list_delete_safe(next);
 
     semd_t *sem = container_of(next, semd_t, s_freelink);
     reset(sem);
