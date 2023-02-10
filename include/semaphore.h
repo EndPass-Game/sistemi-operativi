@@ -1,8 +1,8 @@
 #ifndef _SEMAPHORE_H
 #define _SEMAPHORE_H
 
-#include <pandos_types.h>
 #include <list.h>
+#include <pandos_types.h>
 
 #include "macros.h"
 

@@ -4,8 +4,8 @@
 // put here the functions you need to use in more than one file,
 // mainly used to help you implement other things!
 
-#include <types.h>
 #include <list.h>
+#include <types.h>
 
 /**
  * @brief sets size bytes of ptr to byte
@@ -24,17 +24,16 @@ static inline void list_delete_safe(struct list_head *list) {
 }
 
 /**
- * @brief garantisce che la lista `new` non sia concatenata in nessuna 
+ * @brief garantisce che la lista `new` non sia concatenata in nessuna
  * altra lista prima di essere aggiunta in coda
  */
-static inline void list_add_tail_safe(struct list_head *new, struct list_head* lista) {
+static inline void list_add_tail_safe(struct list_head *new, struct list_head *lista) {
     list_delete_safe(new);
-    list_add_tail(new,lista);
+    list_add_tail(new, lista);
 }
 
-
 /**
- * @brief garantisce che la lista `new` non sia concatenata in nessuna 
+ * @brief garantisce che la lista `new` non sia concatenata in nessuna
  * altra lista prima di essere aggiunta in lista
  */
 static inline void list_add_safe(struct list_head *new, struct list_head *list) {

@@ -1,8 +1,9 @@
+#include "semaphore.h"
+
 #include <hashtable.h>
 
 #include "process.h"  // container of pcb data, and ProcQ functions
-#include "semaphore.h"
-#include "utils.h"  // list_delete_safe
+#include "utils.h"    // list_delete_safe
 
 /**
  * @brief Semaphore table che contiene tutti i semafori presenti nel programma
@@ -30,7 +31,7 @@ static semd_t *find_sem(int *semAdd);
 /**
  * @brief setta il semaforo al valore di default (null)
  */
-static void reset(semd_t * sem);
+static void reset(semd_t *sem);
 
 /**
  * @brief alloca un semaforo
@@ -61,7 +62,7 @@ int insertBlocked(int *semAdd, pcb_t *p) {
     list_delete_safe(&p->p_list);
     insertProcQ(&sem->s_procq, p);
     p->p_semAdd = semAdd;
-    
+
     return false;
 }
 
@@ -88,7 +89,7 @@ pcb_t *outBlocked(pcb_t *p) {
     if (sem == NULL) return NULL;
 
     struct list_head *pos = NULL;
-    struct list_head *p_list = NULL; 
+    struct list_head *p_list = NULL;
     list_for_each(pos, &sem->s_procq) {
         if (container_of(pos, pcb_t, p_list) == p) {
             p_list = pos;
@@ -98,7 +99,7 @@ pcb_t *outBlocked(pcb_t *p) {
     if (p_list != NULL) {
         list_delete_safe(p_list);
         free_semd_ifempty(sem);
-        
+
         pcb_t *pcb = container_of(p_list, pcb_t, p_list);
         pcb->p_semAdd = NULL;
 
@@ -124,18 +125,18 @@ void initASH() {
 }
 
 static semd_t *find_sem(int *semAdd) {
-    struct hlist_head *sem_hlist = &semd_h[hash_min((u32)semAdd, HASH_BITS(semd_h))];
+    struct hlist_head *sem_hlist = &semd_h[hash_min((u32) semAdd, HASH_BITS(semd_h))];
     if (!hlist_empty(sem_hlist)) {
-        // prendiamo il primo elemento dobbiamo controllare 
+        // prendiamo il primo elemento dobbiamo controllare
         // che sia veramente uguale a semAdd, risolve collisioni di hash.
         struct hlist_node *pro = NULL;
         hlist_for_each(pro, sem_hlist) {
-            semd_t * sem = container_of(pro, semd_t, s_link);
-            if(sem->s_key == semAdd)
+            semd_t *sem = container_of(pro, semd_t, s_link);
+            if (sem->s_key == semAdd)
                 return sem;
         }
     }
-    
+
     return NULL;
 }
 

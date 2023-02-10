@@ -1,4 +1,5 @@
 #include "process.h"
+
 #include "utils.h"
 
 /**
@@ -16,7 +17,7 @@ pcb_t pcbFree_table[MAX_PROC];
  * @brief Resettiamo il Process Control Block(pcb), settando tutti i
  * campi a 0. (oppure a lista vuota (che punta sé stessi) se il campo è una lista)
  */
-static void reset(pcb_t* pcb);
+static void reset(pcb_t *pcb);
 
 void initPcbs() {
     for (int i = 0; i < MAX_PROC; i++) {
@@ -41,7 +42,7 @@ pcb_t *allocPcb() {
 
     struct list_head *next = pcbFree_h.next;
     list_delete_safe(next);
-    
+
     pcb_t *pcb = container_of(next, pcb_t, p_list);
     reset(pcb);
     return pcb;
@@ -77,7 +78,7 @@ pcb_t *removeProcQ(struct list_head *head) {
     if (emptyProcQ(head)) {
         return NULL;
     }
-    
+
     pcb_t *next_elem = container_of(head->next, pcb_t, p_list);
     list_delete_safe(&next_elem->p_list);
     return next_elem;
@@ -116,7 +117,7 @@ pcb_t *removeChild(pcb_t *parent) {
     if (list_empty(&parent->p_child)) {
         return NULL;
     }
-    
+
     pcb_t *child_pcb = container_of(parent->p_child.next, pcb_t, p_sib);
     list_delete_safe(&child_pcb->p_sib);
     return child_pcb;
@@ -147,7 +148,7 @@ pcb_t *outChild(pcb_t *child) {
     return NULL;
 }
 
-static void reset(pcb_t* pcb) {
+static void reset(pcb_t *pcb) {
     memset(pcb, 0, sizeof(pcb_t));
 
     INIT_LIST_HEAD(&pcb->p_list);

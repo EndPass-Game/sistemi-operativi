@@ -1,4 +1,5 @@
 #include "namespace.h"
+
 #include "process.h"
 #include "utils.h"  // list_delete_safe
 
@@ -56,8 +57,8 @@ nsd_t *allocNamespace(int type) {
     if (type < 0 || type >= NS_TYPE_MAX) {
         return NULL;
     }
-    
-    if(list_empty(&type_nsFree_h[type])) {
+
+    if (list_empty(&type_nsFree_h[type])) {
         return NULL;
     }
 

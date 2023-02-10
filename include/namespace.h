@@ -1,8 +1,8 @@
 #ifndef _NAMESPACE_H
 #define _NAMESPACE_H
 
-#include <pandos_types.h>
 #include <list.h>
+#include <pandos_types.h>
 
 #include "macros.h"
 

@@ -1,11 +1,10 @@
 #ifndef _PROCESS_H
 #define _PROCESS_H
 
-#include <pandos_types.h>
 #include <list.h>
+#include <pandos_types.h>
 
 #include "macros.h"
-
 
 /**
  * @brief Inizializza la lista pcbFree in modo da contenere tutti gli elementi della
@@ -70,7 +69,7 @@ pcb_t *removeProcQ(struct list_head *head);
 
 /**
  * @brief Rimuove il PCB puntato da p dalla coda dei processi puntata da head.
- *  
+ *
  * @param head elemento sentinella della lista
  * @param p una posizione arbitraria all'interno della coda
  * @return pcb_t* NULL se p non è presente, altrimenti il puntatore a p
