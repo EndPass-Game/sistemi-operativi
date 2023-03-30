@@ -1,7 +1,7 @@
 
 OUTDIR=build
 
-kernel: cmake compile
+phase1: cmake compile
 	umps3-elf2umps -k $(OUTDIR)/phase1.kernel.elf
 
 compile: cmake
@@ -9,7 +9,7 @@ compile: cmake
 
 cmake: CMakeLists.txt
 	@mkdir -p $(OUTDIR)
-	@cd $(OUTDIR) && cmake ..
+	@cd $(OUTDIR) && cmake -DPHASE1=ON ..
 
 clean:
 	cd $(OUTDIR) && make clean
