@@ -53,7 +53,8 @@ add_executable(${EXEC_NAME}
 )
 
 target_include_directories(${EXEC_NAME} 
-    PRIVATE "include"
+    PRIVATE "include/phase1"
+    PRIVATE "include/utils"
     PRIVATE "lib"
     PRIVATE "/usr/include/umps3"
 )
