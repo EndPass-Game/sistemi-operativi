@@ -3,6 +3,7 @@
 #include <umps3/umps/bios_defs.h>  // BIOS_EXEC_HANDLERS_ADDRS
 #include <umps3/umps/cp0.h>    // STATUS_IEp, STATUS_KUp
 #include <umps3/umps/const.h>  // LDIT
+#include <umps3/umps/libumps.h>  // setSTATUS, getStatus
 
 #include <list.h>
 #include <pandos_types.h>
@@ -41,7 +42,7 @@ int main() {
     initPassUpVector();
     initPcbs();
     initASH();
-    initNS();
+    initNamespaces();
 
     mkEmptyProcQ(&g_ready_queue);
     // TODO: initialize device semaphores
@@ -53,10 +54,11 @@ int main() {
     pcb_t *pcb = allocReadyPcb();
     pcb->p_s.pc_epc = (memaddr) test;
     pcb->p_s.reg_t9 = (memaddr) test;  // modify pc -> modify t9, 10.2-pops
-    pcb->p_s.status |= STATUS_IEp | STATUS_KUp | STATUS_TE;
+    pcb->p_s.status |= STATUS_IEp | STATUS_TE;  // 0 -> kernel mode on
     RAMTOP(pcb->p_s.reg_sp);
 
     scheduler();
+    return 0;
 }
 
 static pcb_t *allocReadyPcb() {

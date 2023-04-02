@@ -1,5 +1,6 @@
 #include <umps3/umps/bios_defs.h>  // BIOS_DATA_PAGE_BASE
 #include <umps3/umps/cp0.h>    // STATUS_KUp
+#include <umps3/umps/libumps.h>  // LDST
 
 #include "def-syscall.h"  // sycall codes
 #include "syscall.h"
@@ -26,19 +27,19 @@ void syscallHandler() {
 
     switch (syscall_code) {
     case SYSCALL_CREATEPROCESS:
-        result = sysCreateProcess(a1, a2, a3);
+        result = sysCreateProcess((state_t *) a1, (support_t *) a2, (nsd_t *) a3);
         break;
     case SYSCALL_TERMPROCESS:
-        sysTerminateProcess(a1);
+        sysTerminateProcess((int) a1);
         break;
     case SYSCALL_PASSEREN:
-        sysPasseren(a1);
+        sysPasseren((int *) a1);
         break;
     case SYSCALL_VERHOGEN:
-        sysVerhogen(a1);
+        sysVerhogen((int *) a1);
         break;
     case SYSCALL_DOIO:
-        result = sysDoIO(a1, a2);
+        result = sysDoIO((int *) a1, (int *) a2);
         break;
     case SYSCALL_GETTIME:
         result = sysGetTime();
@@ -50,10 +51,10 @@ void syscallHandler() {
         result = (unsigned int) sysGetSupportPtr();
         break;
     case SYSCALL_GETPROCESSID:
-        result = sysGetProcessId(a1);
+        result = sysGetProcessID((int) a1);
         break;
     case SYSCALL_GET_CHILDREN:
-        result = sysGetChildren(a1, a2);
+        result = sysGetChildren((int *) a1, (int) a2);
         break;
     default:
         // TODO: implement defalt case.
@@ -93,6 +94,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 
 int sysGetTime(void) {
     // TODO;
+    return 0;
 }
 
 void sysClockWait(void) {
@@ -104,7 +106,7 @@ support_t *sysGetSupportPtr(void) {
     return NULL;
 }
 
-int sysGetProcessId(int parent) {
+int sysGetProcessID(int parent) {
     // TODO;
     return 0;
 }

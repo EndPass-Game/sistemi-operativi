@@ -3,6 +3,8 @@
 #include <umps3/umps/bios_defs.h>  // BIOS_DATA_PAGE_BASE
 #include <umps3/umps/cp0.h>    // CAUSE_GET_EXCCODE, exeption codes EXC_*
 
+#include "exceptions.h"
+#include "syscall.h"  // syscallHandler
 
 // TODO: capire cosa serva
 void uTLB_RefillHandler() {

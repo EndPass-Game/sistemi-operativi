@@ -84,7 +84,7 @@ void sysVerhogen(int *semaddr);
  * essere zero se ha successo, -1 in caso di errore. Il contenuto
  * del registro di status del dispositivo potra’ essere letto nel
  * corrispondente elemento di cmdValues.
- * 
+ *
  */
 int sysDoIO(int *cmdAddr, int *cmdValues);
 
