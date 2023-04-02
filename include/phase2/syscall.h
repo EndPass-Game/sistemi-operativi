@@ -15,6 +15,8 @@ typedef struct support_t {
     context_t sup_exceptContext[2];
 } support_t;
 
+void syscallHandler(void);
+
 /**
  * @brief Questa system call crea un nuovo processo
  * come figlio del chiamante. Il primo parametro
@@ -39,7 +41,7 @@ typedef struct support_t {
  *
  * restituisce il pid del processo creato
  */
-int SYSCALL(SYSCALL_CREATEPROCESS, state_t *statep, support_t *supportp, nsd_t *ns);
+int sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns);
 
 /**
  * @brief Quando invocata, la SYS2 termina il processo
@@ -49,7 +51,7 @@ int SYSCALL(SYSCALL_CREATEPROCESS, state_t *statep, support_t *supportp, nsd_t *
  * Se il secondo parametro e’ 0 il bersaglio e’ il
  * processo invocante.
  */
-void SYSCALL(SYSCALL_TERMPROCESS, int pid, 0, 0);
+void sysTerminateProcess(int pid);
 
 /**
  * @brief Operazione di richiesta di un semaforo binario. Il
@@ -58,7 +60,7 @@ void SYSCALL(SYSCALL_TERMPROCESS, int pid, 0, 0);
  * L’indirizzo della variabile agisce da identificatore
  * per il semaforo.
  */
-void SYSCALL(SYSCALL_PASSEREN, int *semaddr, 0, 0);
+void sysPasseren(int *semaddr);
 
 /**
  * @brief Operazione di rilascio su un semaforo binario. Il
@@ -68,7 +70,23 @@ void SYSCALL(SYSCALL_PASSEREN, int *semaddr, 0, 0);
  * per il semaforo.
  *
  */
-void SYSCALL(SYSCALL_VERHOGEN, int *semaddr, 0, 0);
+void sysVerhogen(int *semaddr);
+
+/**
+ * @brief – Effettua un’operazione di I/O. CmdValues e’ un vettore di 2
+ * interi (per I terminali) o 4 interi (altri device).
+ * – La system call carica I registri di device con i valori di
+ * CmdValues scrivendo il comando cmdValue nei registri
+ * cmdAddr e seguenti, e mette in pausa il processo
+ * chiamante fino a quando non si e’ conclusa.
+ * –L’operazione è bloccante, quindi il chiamante viene sospeso
+ * sino alla conclusione del comando. Il valore ritornato deve
+ * essere zero se ha successo, -1 in caso di errore. Il contenuto
+ * del registro di status del dispositivo potra’ essere letto nel
+ * corrispondente elemento di cmdValues.
+ * 
+ */
+int sysDoIO(int *cmdAddr, int *cmdValues);
 
 /**
  * @brief – Quando invocata, la NSYS6 restituisce il tempo
@@ -79,7 +97,7 @@ void SYSCALL(SYSCALL_VERHOGEN, int *semaddr, 0, 0);
  * tempo passato durante l’esecuzione di un
  * processo.
  */
-int SYSCALL(SYSCALL_GETTIME, 0, 0, 0);
+int sysGetTime(void);
 
 /**
  * @brief – Equivalente a una Passeren sul semaforo dell’Interval Timer.
@@ -87,7 +105,7 @@ int SYSCALL(SYSCALL_GETTIME, 0, 0, 0);
  * dispositivo.
  *
  */
-int SYSCALL(SYSCALL_CLOCKWAIT, 0, 0, 0);
+void sysClockWait(void);
 
 /**
  * @brief Restituisce un puntatore alla struttura di supporto del
@@ -95,7 +113,7 @@ int SYSCALL(SYSCALL_CLOCKWAIT, 0, 0, 0);
  * pcb_t.
  *
  */
-support_t *SYSCALL(SYSCALL_GETSUPPORTPTR, 0, 0, 0);
+support_t *sysGetSupportPtr(void);
 
 /**
  * @brief Restituisce l’identificatore del processo invocante se parent
@@ -105,7 +123,7 @@ support_t *SYSCALL(SYSCALL_GETSUPPORTPTR, 0, 0, 0);
  * padre)!
  *
  */
-int SYSCALL(SYSCALL_GETPROCESSID, int parent, 0, 0);
+int sysGetProcessID(int parent);
 
 /**
  * @brief – Un processo che invoca questa system call riceve la lista dei
@@ -119,6 +137,6 @@ int SYSCALL(SYSCALL_GETPROCESSID, int parent, 0, 0);
  * childrens!
  *
  */
-int SYSCALL(SYSCALL_GET_CHILDREN, int *children, int size, 0);
+int sysGetChildren(int *children, int size);
 
 #endif /* _SYSCALL_H */

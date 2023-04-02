@@ -3,7 +3,6 @@
 #include <umps3/umps/bios_defs.h>  // BIOS_DATA_PAGE_BASE
 #include <umps3/umps/cp0.h>    // CAUSE_GET_EXCCODE, exeption codes EXC_*
 
-#include "def-syscall.h"  // sycall codes
 
 // TODO: capire cosa serva
 void uTLB_RefillHandler() {
@@ -48,55 +47,4 @@ void exceptionHandler() {
     }
 
     return;
-}
-
-void syscallHandler() {
-    state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
-
-    if (!(old_state->status & STATUS_KUp)) {
-        // TODO: simulate program trap, syscall without privilege
-    }
-
-    // see 3.5 of pandos.pdf
-    unsigned int syscall_code = old_state->reg_a0;
-    unsigned int a1 = old_state->reg_a1;
-    unsigned int a2 = old_state->reg_a2;
-    unsigned int a3 = old_state->reg_a3;
-
-    // TODO: decidere se per le syscall è meglio passare funzioni
-    // (metodo più clean, ma più lento)
-    // oppure direttamente prenderle dalla memoria (più veloce)
-
-    switch (syscall_code) {
-    case SYSCALL_CREATEPROCESS:
-        // TODO:
-        break;
-    case SYSCALL_TERMPROCESS:
-        // TODO:
-        break;
-    case SYSCALL_PASSEREN:
-        // TODO:
-        break;
-    case SYSCALL_VERHOGEN:
-        // TODO:
-        break;
-    case SYSCALL_GETTIME:
-        // TODO:
-        break;
-    case SYSCALL_CLOCKWAIT:
-        // TODO:
-        break;
-    case SYSCALL_GETSUPPORTPTR:
-        // TODO:
-        break;
-    case SYSCALL_GETPROCESSID:
-        // TODO:
-        break;
-    case SYSCALL_GET_CHILDREN:
-        // TODO:
-        break;
-    default:
-
-        break;
-    }
 }

@@ -2,6 +2,8 @@
 #include <umps3/umps/types.h>
 #include <umps3/umps/bios_defs.h>  // BIOS_EXEC_HANDLERS_ADDRS
 #include <umps3/umps/cp0.h>    // STATUS_IEp, STATUS_KUp
+#include <umps3/umps/const.h>  // LDIT
+
 #include <list.h>
 #include <pandos_types.h>
 #include <pandos_const.h>  // KERNELSTACK, RAMTOP
@@ -10,6 +12,7 @@
 // should we include phase1? phase2 directories?
 #include "process.h"
 #include "semaphore.h"
+#include "namespace.h"
 #include "scheduler.h"
 #include "globals.h"
 #include "exceptions.h"
@@ -38,10 +41,14 @@ int main() {
     initPassUpVector();
     initPcbs();
     initASH();
+    initNS();
 
     mkEmptyProcQ(&g_ready_queue);
     // TODO: initialize device semaphores
-    // TODO: load system wide interval timer
+
+    // load interval timer with 100 ms
+    // TODO: capire cosa intende con "non può essere una semplice constante" nelle
+    LDIT(100);
 
     pcb_t *pcb = allocReadyPcb();
     pcb->p_s.pc_epc = (memaddr) test;
@@ -57,7 +64,6 @@ static pcb_t *allocReadyPcb() {
     if (pcb == NULL) {
         return NULL;
     }
-
 
     g_process_count++;
     insertProcQ(&g_ready_queue, pcb);
