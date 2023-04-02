@@ -5,4 +5,6 @@ void uTLB_RefillHandler();
 
 void exceptionHandler();
 
+void syscallHandler();
+
 #endif /* _EXCEPTIONS_H */

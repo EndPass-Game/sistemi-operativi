@@ -1,5 +1,5 @@
 #include <umps3/umps/libumps.h>
-#include <umps3/umps/cp0.h>
+#include <umps3/umps/cp0.h>  // STATUS_IEc, STATUS_TE
 #include <list.h>
 
 #include "process.h"

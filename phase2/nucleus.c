@@ -1,9 +1,10 @@
 
 #include <umps3/umps/types.h>
 #include <umps3/umps/bios_defs.h>  // BIOS_EXEC_HANDLERS_ADDRS
+#include <umps3/umps/cp0.h>    // STATUS_IEp, STATUS_KUp
 #include <list.h>
 #include <pandos_types.h>
-#include <pandos_const.h>  // KERNELSTACK
+#include <pandos_const.h>  // KERNELSTACK, RAMTOP
 
 // TODO: decide whether if we should refactor these imports
 // should we include phase1? phase2 directories?
@@ -42,9 +43,11 @@ int main() {
     // TODO: initialize device semaphores
     // TODO: load system wide interval timer
 
-    // TODO: refactor this part, needs t9 register??
     pcb_t *pcb = allocReadyPcb();
     pcb->p_s.pc_epc = (memaddr) test;
+    pcb->p_s.reg_t9 = (memaddr) test;  // modify pc -> modify t9, 10.2-pops
+    pcb->p_s.status |= STATUS_IEp | STATUS_KUp | STATUS_TE;
+    RAMTOP(pcb->p_s.reg_sp);
 
     scheduler();
 }
@@ -54,6 +57,7 @@ static pcb_t *allocReadyPcb() {
     if (pcb == NULL) {
         return NULL;
     }
+
 
     g_process_count++;
     insertProcQ(&g_ready_queue, pcb);
