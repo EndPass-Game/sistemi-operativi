@@ -8,7 +8,7 @@
 /* create thread */
 #ifndef CREATETHREAD
 #define SYSCALL_CREATEPROCESS 1
-#else 
+#else
 #define SYSCALL_CREATEPROCESS CREATETHREAD
 #endif
 
