@@ -11,7 +11,6 @@ typedef struct support_t {
     context_t sup_exceptContext[2];
 } support_t;
 
-
 void uTLB_RefillHandler();
 
 void exceptionHandler();
