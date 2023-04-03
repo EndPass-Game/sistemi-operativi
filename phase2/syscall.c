@@ -57,7 +57,16 @@ void syscallHandler() {
         result = sysGetChildren((int *) a1, (int) a2);
         break;
     default:
-        // TODO: implement defalt case.
+        // Perform passupor die TODO: decide if should be own func
+        // TODO: check support vector to decide if you should die
+        if (/*check support == NULL*/ false) {
+
+        } else {
+            passupvector_t *passupvector = (passupvector_t *) (BIOS_EXEC_HANDLERS_ADDRS);
+            // Per il nucleo ho solamente una locazione in cui salvare lo stato
+            STST(BIOS_DATA_PAGE_BASE);
+            ((void (*)())passupvector->exception_handler)();
+        }
         break;
     }
 

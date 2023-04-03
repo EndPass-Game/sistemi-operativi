@@ -5,16 +5,6 @@
 
 #include "def-syscall.h"
 
-typedef struct context_t {
-    unsigned int stackPtr, status, pc;
-} context_t;
-
-typedef struct support_t {
-    int sup_asid;
-    state_t sup_exceptState[2];
-    context_t sup_exceptContext[2];
-} support_t;
-
 void syscallHandler(void);
 
 /**

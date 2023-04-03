@@ -14,6 +14,10 @@ void uTLB_RefillHandler() {
     LDST((state_t *) BIOS_DATA_PAGE_BASE);
 }
 
+// TODO: move this in appropriate section
+static void passUpOrDie();
+static void interruptHanlder();
+
 void exceptionHandler() {
     state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
@@ -23,6 +27,7 @@ void exceptionHandler() {
     switch (cause_bits) {
     case EXC_INT:
         // TODO: pass to interrupt handler
+        interruptHandler();
         break;
     case EXC_MOD:
     case EXC_TLBL:
@@ -49,4 +54,31 @@ void exceptionHandler() {
     }
 
     return;
+}
+
+static void passUpOrDie() {
+    if (/*check support vecto presence*/ false) {
+        // TODO;
+    } else {
+        support_t *support = NULL; // TODO: assign that of the state, how to get the pcb?
+
+        // Ok for this part we should wait the files, but it's the same for TLB and
+        // interrupts!
+    }
+}
+
+static void interruptHandler() {
+    state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
+
+    int non_timer_mask = DISKINTERRUPT | FLASHINTERRUPT | PRINTINTERRUPT | TERMINTERRUPT;
+    int timer_mask =  LOCALTIMERINT | TIMERINTERRUPT;
+    // TODO: gestisci casi in cui ci sono piu interrupt aperti
+
+
+    if (old_state->cause & timer_mask) {
+        
+    } else if (old_state->cause & non_timer_mask) {
+        
+    }
+
 }
