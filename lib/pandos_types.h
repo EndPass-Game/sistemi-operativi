@@ -20,6 +20,24 @@
 typedef signed int   cpu_t;
 typedef unsigned int memaddr;
 
+typedef struct context_t {
+    unsigned int stackPtr, status, pc;
+} context_t;
+
+typedef struct support_t {
+    int sup_asid;
+    state_t sup_exceptState[2];
+    context_t sup_exceptContext[2];
+} support_t;
+
+
+/* Device register type for disks, flash and printers */
+typedef struct dtpreg {
+    unsigned int status;
+    unsigned int command;
+    unsigned int data0;
+    unsigned int data1;
+} dtpreg_t;
 
 typedef struct nsd_t {
     /* Namespace type */
@@ -48,6 +66,9 @@ typedef struct pcb_t {
 
     /* Namespace list */
     nsd_t *namespaces[NS_TYPE_MAX];
+
+    /* support layer information */
+    support_t *p_supportStruct;
 }   pcb_t, *pcb_PTR;
 
 
