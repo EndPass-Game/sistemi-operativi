@@ -9,12 +9,19 @@
 #include "scheduler.h"
 #include "process.h"  // insertProcQ
 
+// TODO: move these to correct location when refactoring
+typedef unsigned int devreg;
+#define DEVICESTATUSMASK 0xFF
+#define TRANSMITTED 5
+#define DEVREG_START_ADDR 0x10000054
+
 
 void syscallHandler() {
     state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
-    if (!(old_state->status & STATUS_KUp)) {
+    if (old_state->status & STATUS_KUp) {
         // TODO: simulate program trap, syscall without privilege
+        // should this be handled here or other place?
     }
 
     // see 3.5 of pandos.pdf
@@ -57,7 +64,7 @@ void syscallHandler() {
     case SYSCALL_GETPROCESSID:
         result = sysGetProcessID((int) a1);
         break;
-    case SYSCALL_GET_CHILDREN:
+    case SYSCALL_GETCHILDREN:
         result = sysGetChildren((int *) a1, (int) a2);
         break;
     default:
@@ -113,7 +120,28 @@ void sysVerhogen(int *semaddr) {
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
-    // TODO;
+    // TODO: how to distinguish between different devices, terminal
+    // devices should have 2 semaphores, one for each terminal (write or read)
+    // but i don't know how to allocate them
+
+    // calculate the address of the status and command registers of the device
+    // see 5.1 pops, pg28. (or see p1test.c)
+    devreg *statusp = (devreg *) (cmdAddr + (TRANSTATUS * DEVREGLEN));
+    devreg *commandp = (devreg *) (cmdAddr + (TRANCOMMAND * DEVREGLEN));
+
+    int device_number = ((int) cmdAddr - DEVREG_START_ADDR) / DEVREGSIZE;
+    int *semaddr = &g_dev_sem[device_number];
+
+    sysPasseren(semaddr);
+    *commandp = (devreg) cmdValues;
+
+    if (g_curr_pcb != NULL) {  // stop the process if it is not null
+        insertBlocked(semaddr, g_curr_pcb);
+        g_curr_pcb = NULL;
+    }
+    g_soft_block_count++;
+    scheduler();
+
     return 0;
 }
 

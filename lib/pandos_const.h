@@ -181,6 +181,4 @@
 #define UPROCMAX 8
 #define POOLSIZE (UPROCMAX * 2)
 /* End of Mikeyg constants */
-
-
 #endif

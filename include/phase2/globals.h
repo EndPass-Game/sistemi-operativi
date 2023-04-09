@@ -30,4 +30,16 @@ extern struct list_head g_ready_queue;
  */
 extern pcb_t *g_curr_pcb;
 
+/**
+ * @brief device semaphores
+ * 
+ * TODO: how many device semaphores are there?
+ */
+extern int g_dev_sem[20];
+
+/**
+ * @brief Initialize the kernel (aka phase2) global variables
+ */
+void initKernelGlobals();
+
 #endif  // _PHASE2_GLOBALS_H

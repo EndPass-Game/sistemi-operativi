@@ -39,6 +39,7 @@ static pcb_t *allocReadyPcb();
 static void initPassUpVector();
 
 int main() {
+    initKernelGlobals();
     initPassUpVector();
     initPcbs();
     initASH();
