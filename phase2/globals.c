@@ -24,4 +24,6 @@ LIST_HEAD(g_ready_queue);
  * @brief Pointer to the pcb that is in the “running” state, i.e.
  * the current executing process.
  */
-pcb_t *g_curr_pbc = NULL;
+pcb_t *g_curr_pcb = NULL;
+
+// TODO device semaphores

@@ -4,6 +4,10 @@
 
 #include "def-syscall.h"  // sycall codes
 #include "syscall.h"
+#include "semaphore.h"
+#include "globals.h"
+#include "scheduler.h"
+#include "process.h"  // insertProcQ
 
 
 void syscallHandler() {
@@ -89,11 +93,23 @@ void sysTerminateProcess(int pid) {
 }
 
 void sysPasseren(int *semaddr) {
-    // TODO;
+    if (*semaddr <= 0) {
+        // TODO: should we handle softblock here or other part?
+        insertBlocked(semaddr, g_curr_pcb);
+        g_curr_pcb = NULL;
+        scheduler();
+    } else {
+        *semaddr = *semaddr - 1;
+    }
 }
 
 void sysVerhogen(int *semaddr) {
-    // TODO;
+    pcb_t *removed_pcb = removeBlocked(semaddr);
+    if (removed_pcb != NULL) {
+        insertProcQ(&g_ready_queue, removed_pcb);
+    } else {
+        *semaddr = *semaddr + 1;
+    }
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {

@@ -28,6 +28,6 @@ extern struct list_head g_ready_queue;
  * @brief Pointer to the pcb that is in the “running” state, i.e.
  * the current executing process.
  */
-extern pcb_t *g_curr_pbc;
+extern pcb_t *g_curr_pcb;
 
 #endif  // _PHASE2_GLOBALS_H

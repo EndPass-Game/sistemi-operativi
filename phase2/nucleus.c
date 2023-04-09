@@ -48,8 +48,7 @@ int main() {
     // TODO: initialize device semaphores
 
     // load interval timer with 100 ms
-    // TODO: capire cosa intende con "non può essere una semplice constante" nelle
-    LDIT(100);
+    LDIT(PSECOND / 10);
 
     pcb_t *pcb = allocReadyPcb();
     pcb->p_s.pc_epc = (memaddr) test;

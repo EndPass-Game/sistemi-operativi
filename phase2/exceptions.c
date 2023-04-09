@@ -36,6 +36,7 @@ void exceptionHandler() {
     case EXC_CPU:
     case EXC_OV:
         // TODO: pass to program trap handler
+        passUpOrDie();
         break;
 
     case EXC_SYS:
