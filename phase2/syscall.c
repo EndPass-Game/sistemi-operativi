@@ -64,7 +64,7 @@ void syscallHandler() {
         } else {
             passupvector_t *passupvector = (passupvector_t *) (BIOS_EXEC_HANDLERS_ADDRS);
             // Per il nucleo ho solamente una locazione in cui salvare lo stato
-            STST(BIOS_DATA_PAGE_BASE);
+            STST((void *) BIOS_DATA_PAGE_BASE);
             ((void (*)())passupvector->exception_handler)();
         }
         break;

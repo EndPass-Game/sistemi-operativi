@@ -6,17 +6,9 @@
 #include "exceptions.h"
 #include "syscall.h"  // syscallHandler
 
-// TODO: capire cosa serva
-void uTLB_RefillHandler() {
-    setENTRYHI(0x80000000);
-    setENTRYLO(0x80000000);
-    TLBWR();
-    LDST((state_t *) BIOS_DATA_PAGE_BASE);
-}
-
 // TODO: move this in appropriate section
 static void passUpOrDie();
-static void interruptHanlder();
+static void interruptHandler();
 static void nonTimerInterruptHandler(int int_line);
 static void timerInterruptHandler();
 
@@ -50,6 +42,7 @@ void exceptionHandler() {
         syscallHandler();
         break;
     default:
+        passUpOrDie();
         // TODO: invent a default behaviour, could also be nothing
         break;
     }
@@ -61,7 +54,7 @@ static void passUpOrDie() {
     if (/*check support vecto presence*/ false) {
         // TODO;
     } else {
-        support_t *support = NULL; // TODO: assign that of the state, how to get the pcb?
+        // support_t *support = NULL; // TODO: assign that of the state, how to get the pcb?
 
         // Ok for this part we should wait the files, but it's the same for TLB and
         // interrupts!

@@ -30,15 +30,6 @@ typedef struct support_t {
     context_t sup_exceptContext[2];
 } support_t;
 
-
-/* Device register type for disks, flash and printers */
-typedef struct dtpreg {
-    unsigned int status;
-    unsigned int command;
-    unsigned int data0;
-    unsigned int data1;
-} dtpreg_t;
-
 typedef struct nsd_t {
     /* Namespace type */
     int n_type;
