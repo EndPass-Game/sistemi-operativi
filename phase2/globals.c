@@ -30,14 +30,14 @@ pcb_t *g_curr_pcb;
  * @brief device semaphores
  * TODO: how many device semaphores are there?
  */
-int g_dev_sem[20];
+int g_dev_sem[64];
 
 void initKernelGlobals() {
     g_process_count = 0;
     g_soft_block_count = 0;
     INIT_LIST_HEAD(&g_ready_queue);
     g_curr_pcb = NULL;
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 64; i++) {
         g_dev_sem[i] = 1;
     }
 }

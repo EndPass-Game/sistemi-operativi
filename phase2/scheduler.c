@@ -17,9 +17,8 @@ void scheduler() {
         } else if (g_process_count > 0 && g_soft_block_count > 0) {
             // TODO: this code is not tested, should not work.
             // set the status register to enable interrupts
-            setSTATUS(getSTATUS() | STATUS_IEc);
             // disable the Process Local Timer
-            setSTATUS(getSTATUS() & ~STATUS_TE);
+            setSTATUS((getSTATUS() | STATUS_IEc) & ~STATUS_TE);
             WAIT();
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
             // deadlock found TODO: how to detech deadlocks?
@@ -28,11 +27,11 @@ void scheduler() {
     } 
 
     g_curr_pcb = removeProcQ(&g_ready_queue);
+
+    if (g_curr_pcb == NULL) return;  // this should never happen
+
     setTIMER(TIMESLICE);
-
-    debug_register = getSTATUS();
     LDST(&g_curr_pcb->p_s);
-
     // TODO: capisci come deallocare e decrementare quando
     // un processo finisce
 }

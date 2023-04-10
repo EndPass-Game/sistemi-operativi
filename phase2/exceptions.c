@@ -5,6 +5,7 @@
 
 #include "exceptions.h"
 #include "syscall.h"  // syscallHandler
+#include "globals.h"  
 
 // TODO: move this in appropriate section
 static void passUpOrDie();
@@ -127,7 +128,40 @@ static void nonTimerInterruptHandler(int int_line) {
     // 6. Insert the newly unblocked pcb on the Ready Queue, transitioning this process from the “blocked” state to the “ready” state.
     // 7. Return control to the Current Process: Perform a LDST on the saved exception state (located at the start of the BIOS Data Page [Section 3.4]).
 
-    // TODO: capire come calcolare l'indirizzo del device register
+    // NOTA: Calcolo dell'indirizzo del device register
+    // int_line mi indica il numero di linea di interrupt, poi esiste la zona di
+    // INTERRUPT DEVICES BIT MAP che è una work per dispositivo utilizzato per indicare
+    // se un certo dispostitivo è ha quella linea accesa o meno.
+
+    int *int_dev_bitmap = (int *) INTDEV_BITMAP;  // TODO: metterlo fra le costanti
+    int *devreg_addr = NULL;
+    int devnumber = -1;
+    for (int i = 0; i < 8; i++) {
+        if (int_dev_bitmap[i] & (1 << int_line)) {
+            devreg_addr = (int *) DEVADDR(int_line, i);
+            devnumber = i;
+            break;
+        }
+    }
+
+    if (devreg_addr == NULL) {
+        return;  // This should never happen
+    }
+
+    devreg *statusp = (devreg *) DEVSTATUS(devreg_addr);
+
+    int status_code = *statusp;
+    *statusp = ACK;
+
+    int *semaddr = &g_dev_sem[devnumber];
+    pcb_t *unblocked = sysVerhogen(semaddr);
+    if (unblocked == NULL) {
+        return;  // This should never happen
+    }
+    g_soft_block_count--;
+    unblocked->p_s.reg_v0 = status_code;
+
+    LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
 static void timerInterruptHandler() {

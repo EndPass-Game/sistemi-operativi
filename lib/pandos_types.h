@@ -76,4 +76,8 @@ typedef struct semd_t {
     struct list_head s_freelink;
 } semd_t, *semd_PTR;
 
+/* Custom types */
+typedef unsigned int devreg;
+
+
 #endif

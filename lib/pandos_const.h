@@ -181,4 +181,23 @@
 #define UPROCMAX 8
 #define POOLSIZE (UPROCMAX * 2)
 /* End of Mikeyg constants */
+
+/* Custom consts */
+
+#define DEVICESTATUSMASK 0xFF
+#define TRANSMITTED 5
+#define DEVREG_START_ADDR 0x10000054
+#define INTDEV_BITMAP 0x10000040
+
+// Get the status word of the device register
+#define DEVSTATUS(T) (T + (TRANSTATUS * DEVREGLEN))
+
+// Get the command word of the device register
+#define DEVCOMMAND(T) (T + (TRANCOMMAND * DEVREGLEN))
+
+// Get the device number from the device register address
+#define DEVNUM(T) (((int) cmdAddr - DEVREG_START_ADDR) / DEVREGSIZE)
+
+// Get device address number from interrupt and device number
+#define DEVADDR(INT, DEV) (DEVREG_START_ADDR + ((INT - 3) * 0x80) + (DEV * 0x10))
 #endif

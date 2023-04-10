@@ -9,12 +9,6 @@
 #include "scheduler.h"
 #include "process.h"  // insertProcQ
 
-// TODO: move these to correct location when refactoring
-typedef unsigned int devreg;
-#define DEVICESTATUSMASK 0xFF
-#define TRANSMITTED 5
-#define DEVREG_START_ADDR 0x10000054
-
 
 void syscallHandler() {
     state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
@@ -110,32 +104,34 @@ void sysPasseren(int *semaddr) {
     }
 }
 
-void sysVerhogen(int *semaddr) {
+pcb_t *sysVerhogen(int *semaddr) {
     pcb_t *removed_pcb = removeBlocked(semaddr);
     if (removed_pcb != NULL) {
         insertProcQ(&g_ready_queue, removed_pcb);
     } else {
         *semaddr = *semaddr + 1;
     }
+
+    return removed_pcb;
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
-    // TODO: how to distinguish between different devices, terminal
+    // TODO: FIX: how to distinguish between different devices, terminal
     // devices should have 2 semaphores, one for each terminal (write or read)
     // but i don't know how to allocate them
 
     // calculate the address of the status and command registers of the device
     // see 5.1 pops, pg28. (or see p1test.c)
-    devreg *statusp = (devreg *) (cmdAddr + (TRANSTATUS * DEVREGLEN));
-    devreg *commandp = (devreg *) (cmdAddr + (TRANCOMMAND * DEVREGLEN));
+    // devreg *statusp = (devreg *) DEVSTATUS(cmdAddr));
+    devreg *commandp = (devreg *) DEVCOMMAND(cmdAddr);
 
-    int device_number = ((int) cmdAddr - DEVREG_START_ADDR) / DEVREGSIZE;
+    int device_number = DEVNUM(cmdAddr);
     int *semaddr = &g_dev_sem[device_number];
 
     sysPasseren(semaddr);
-    *commandp = (devreg) cmdValues;
+    *commandp = (devreg) cmdValues[0];  // TODO: write cmdValues[1] to the read end.
 
-    if (g_curr_pcb != NULL) {  // stop the process if it is not null
+    if (g_curr_pcb != NULL) {  // stop the process 
         insertBlocked(semaddr, g_curr_pcb);
         g_curr_pcb = NULL;
     }

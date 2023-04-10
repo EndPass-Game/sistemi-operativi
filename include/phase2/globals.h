@@ -35,7 +35,7 @@ extern pcb_t *g_curr_pcb;
  * 
  * TODO: how many device semaphores are there?
  */
-extern int g_dev_sem[20];
+extern int g_dev_sem[64];
 
 /**
  * @brief Initialize the kernel (aka phase2) global variables

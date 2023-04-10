@@ -56,7 +56,6 @@ int main() {
     pcb->p_s.reg_t9 = (memaddr) test;  // modify pc -> modify t9, 10.2-pops
     pcb->p_s.status |= STATUS_IEp | STATUS_TE;  // 0 -> kernel mode on
     RAMTOP(pcb->p_s.reg_sp);
-
     scheduler();
     return 0;
 }
