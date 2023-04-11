@@ -1,10 +1,10 @@
-#include <umps3/umps/libumps.h>
-#include <umps3/umps/cp0.h>  // STATUS_IEc, STATUS_TE
-#include <pandos_const.h>  // TIMESLICE
 #include <list.h>
+#include <pandos_const.h>    // TIMESLICE
+#include <umps3/umps/cp0.h>  // STATUS_IEc, STATUS_TE
+#include <umps3/umps/libumps.h>
 
-#include "process.h"
 #include "nucleus.h"
+#include "process.h"
 
 void scheduler() {
     if (emptyProcQ(&g_ready_queue)) {

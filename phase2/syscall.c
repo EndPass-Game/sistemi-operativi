@@ -1,19 +1,19 @@
+#include "syscall.h"
+
 #include <umps3/umps/bios_defs.h>  // BIOS_DATA_PAGE_BASE
-#include <umps3/umps/cp0.h>    // STATUS_KUp
-#include <umps3/umps/libumps.h>  // LDST
+#include <umps3/umps/cp0.h>        // STATUS_KUp
+#include <umps3/umps/libumps.h>    // LDST
 
 #include "def-syscall.h"  // sycall codes
-#include "syscall.h"
-#include "semaphore.h"
-#include "nucleus.h"
-#include "scheduler.h"
-#include "process.h"  // insertProcQ
-#include "utils.h"
-#include "namespace.h"
 #include "exceptions.h"
+#include "namespace.h"
+#include "nucleus.h"
+#include "process.h"  // insertProcQ
+#include "scheduler.h"
+#include "semaphore.h"
+#include "utils.h"
 
 void syscallHandler(state_t *old_state) {
-
     if (old_state->status & STATUS_KUc) {
         // TODO: simulate program trap, syscall without privilege
         // should this be handled here or other place?
@@ -32,39 +32,39 @@ void syscallHandler(state_t *old_state) {
     unsigned int result = 0;
 
     switch (syscall_code) {
-    case SYSCALL_CREATEPROCESS:
-        result = sysCreateProcess((state_t *) a1, (support_t *) a2, (nsd_t *) a3);
-        break;
-    case SYSCALL_TERMPROCESS:
-        sysTerminateProcess((memaddr) a1);
-        break;
-    case SYSCALL_PASSEREN:
-        sysPasseren((int *) a1);
-        break;
-    case SYSCALL_VERHOGEN:
-        sysVerhogen((int *) a1);
-        break;
-    case SYSCALL_DOIO:
-        result = sysDoIO((int *) a1, (int *) a2);
-        break;
-    case SYSCALL_GETTIME:
-        result = sysGetTime();
-        break;
-    case SYSCALL_CLOCKWAIT:
-        sysClockWait();
-        break;
-    case SYSCALL_GETSUPPORTPTR:
-        result = (unsigned int) sysGetSupportPtr();
-        break;
-    case SYSCALL_GETPROCESSID:
-        result = sysGetProcessID((int) a1);
-        break;
-    case SYSCALL_GETCHILDREN:
-        result = sysGetChildren((int *) a1, (int) a2);
-        break;
-    default:
-        passUpOrDie(GENERALEXCEPT);
-        break;
+        case SYSCALL_CREATEPROCESS:
+            result = sysCreateProcess((state_t *) a1, (support_t *) a2, (nsd_t *) a3);
+            break;
+        case SYSCALL_TERMPROCESS:
+            sysTerminateProcess((memaddr) a1);
+            break;
+        case SYSCALL_PASSEREN:
+            sysPasseren((int *) a1);
+            break;
+        case SYSCALL_VERHOGEN:
+            sysVerhogen((int *) a1);
+            break;
+        case SYSCALL_DOIO:
+            result = sysDoIO((int *) a1, (int *) a2);
+            break;
+        case SYSCALL_GETTIME:
+            result = sysGetTime();
+            break;
+        case SYSCALL_CLOCKWAIT:
+            sysClockWait();
+            break;
+        case SYSCALL_GETSUPPORTPTR:
+            result = (unsigned int) sysGetSupportPtr();
+            break;
+        case SYSCALL_GETPROCESSID:
+            result = sysGetProcessID((int) a1);
+            break;
+        case SYSCALL_GETCHILDREN:
+            result = sysGetChildren((int *) a1, (int) a2);
+            break;
+        default:
+            passUpOrDie(GENERALEXCEPT);
+            break;
     }
 
     // see 7.2.3 pops for return register
@@ -82,10 +82,10 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
         return -1;
     }
     g_process_count++;
-    memcpy((void *) &pcb->p_s, (void *)statep, sizeof(state_t));
+    memcpy((void *) &pcb->p_s, (void *) statep, sizeof(state_t));
     pcb->p_supportStruct = supportp;  // if supportp is null, it's ok
     pcb->namespaces[ns->n_type] = ns;
-    
+
     insertProcQ(&g_ready_queue, pcb);
     insertChild(g_current_process, pcb);
 
@@ -135,10 +135,10 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 
     g_soft_block_count++;
     sysPasseren(semaddr);
-    
+
     *commandp = (devreg) cmdValues[0];  // TODO: write cmdValues[1] to the read end.
 
-    if (g_current_process != NULL) {  // stop the process 
+    if (g_current_process != NULL) {  // stop the process
         insertBlocked(semaddr, g_current_process);
         g_current_process = NULL;
         scheduler();
@@ -154,9 +154,9 @@ int sysGetTime(void) {
 }
 
 void sysClockWait(void) {
-    //TODO: the other part is handled in the interrupt
-    // the interrupt need to mange this semaphore lika a binary sempahore
-    // **not an ordinary semaphore**
+    // TODO: the other part is handled in the interrupt
+    //  the interrupt need to mange this semaphore lika a binary sempahore
+    //  **not an ordinary semaphore**
     sysPasseren(&g_pseudo_clock);
 }
 
@@ -166,7 +166,7 @@ support_t *sysGetSupportPtr(void) {
 
 int sysGetProcessID(int is_parent) {
     pcb_t *parent_pcb = g_current_process->p_parent;
-    
+
     nsd_t *parent_namespace = NULL;
     if (parent_pcb != NULL) {
         parent_namespace = getNamespace(parent_pcb, PID_NS);
@@ -179,38 +179,39 @@ int sysGetProcessID(int is_parent) {
 
     if (!is_parent) {
         return (int) g_current_process;
-    }else{
-        return (int) parent_pcb;        
+    } else {
+        return (int) parent_pcb;
     }
 
     return 0;
 }
-static int getChildsByNamespace(int *children, int *remaining_size, nsd_t* current_namespace, pcb_t *pcb);
+static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *current_namespace, pcb_t *pcb);
 
 int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
     return getChildsByNamespace(children, &size, current_namespace, g_current_process);
 }
 
-static int getChildsByNamespace(int *children, int *remaining_size, nsd_t* current_namespace, pcb_t *pcb){
-    if(getNamespace(pcb, PID_NS) == current_namespace) return 0;
-    if((*remaining_size) > 0){
+static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *current_namespace, pcb_t *pcb) {
+    if (getNamespace(pcb, PID_NS) == current_namespace) return 0;
+    if ((*remaining_size) > 0) {
         *remaining_size -= 1;
         children[*remaining_size] = (int) pcb;
     }
     int same_namespace_num = 0;
     struct list_head *pos = NULL;
-    
+
     list_for_each(pos, &pcb->p_child) {
         pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
-        
+
         same_namespace_num += getChildsByNamespace(
-            children,
-            remaining_size,
-            current_namespace,
-            curr_pcb
-        ) + 1;  // +1 per contare anche child
+                                  children,
+                                  remaining_size,
+                                  current_namespace,
+                                  curr_pcb
+                              ) +
+                              1;  // +1 per contare anche child
     }
-    
+
     return same_namespace_num;
 }

@@ -1,12 +1,13 @@
-#include <umps3/umps/types.h>
-#include <umps3/umps/libumps.h>
-#include <umps3/umps/bios_defs.h>  // BIOS_DATA_PAGE_BASE
-#include <umps3/umps/cp0.h>    // CAUSE_GET_EXCCODE, exeption codes EXC_*
-
 #include "exceptions.h"
-#include "syscall.h"  // syscallHandler  
+
+#include <umps3/umps/bios_defs.h>  // BIOS_DATA_PAGE_BASE
+#include <umps3/umps/cp0.h>        // CAUSE_GET_EXCCODE, exeption codes EXC_*
+#include <umps3/umps/libumps.h>
+#include <umps3/umps/types.h>
+
 #include "nucleus.h"
-#include "utils.h"  // memcpy
+#include "syscall.h"  // syscallHandler
+#include "utils.h"    // memcpy
 
 // TODO: move this in appropriate section
 static void interruptHandler();
@@ -20,32 +21,32 @@ void exceptionHandler() {
     unsigned int cause_bits = CAUSE_GET_EXCCODE(old_state->cause);
 
     switch (cause_bits) {
-    case EXC_INT:
-        interruptHandler();
-        break;
-    case EXC_MOD:
-    case EXC_TLBL:
-    case EXC_TLBS:
-        passUpOrDie(PGFAULTEXCEPT);
-        break;
-    case EXC_ADEL:
-    case EXC_ADES:
-    case EXC_IBE:
-    case EXC_DBE:
-    case EXC_BP:
-    case EXC_RI:
-    case EXC_CPU:
-    case EXC_OV:
-        passUpOrDie(GENERALEXCEPT);
-        break;
+        case EXC_INT:
+            interruptHandler();
+            break;
+        case EXC_MOD:
+        case EXC_TLBL:
+        case EXC_TLBS:
+            passUpOrDie(PGFAULTEXCEPT);
+            break;
+        case EXC_ADEL:
+        case EXC_ADES:
+        case EXC_IBE:
+        case EXC_DBE:
+        case EXC_BP:
+        case EXC_RI:
+        case EXC_CPU:
+        case EXC_OV:
+            passUpOrDie(GENERALEXCEPT);
+            break;
 
-    case EXC_SYS:
-        syscallHandler(old_state);
-        break;
-    default:
-        passUpOrDie(GENERALEXCEPT);
-        // TODO: invent a default behaviour, could also be nothing
-        break;
+        case EXC_SYS:
+            syscallHandler(old_state);
+            break;
+        default:
+            passUpOrDie(GENERALEXCEPT);
+            // TODO: invent a default behaviour, could also be nothing
+            break;
     }
 
     return;
@@ -61,17 +62,15 @@ void passUpOrDie(int passupType) {
     }
 }
 
-
-
 static void interruptHandler() {
     state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
-    int interrupt_mask = DISKINTERRUPT | 
-                        FLASHINTERRUPT | 
-                        PRINTINTERRUPT | 
-                        TERMINTERRUPT  | 
-                        LOCALTIMERINT  | 
-                        TIMERINTERRUPT;
+    int interrupt_mask = DISKINTERRUPT |
+                         FLASHINTERRUPT |
+                         PRINTINTERRUPT |
+                         TERMINTERRUPT |
+                         LOCALTIMERINT |
+                         TIMERINTERRUPT;
 
     // TODO: gestire casi in cui ho più interrupt sullo stesso filo
     // non sono sicuro se sia corretto il settaggio di ~intbit
@@ -87,7 +86,7 @@ static void interruptHandler() {
     // #define TERMN 6
 
     // NOTA: non cambiare l'ordine, è importante per la precedenza
-    if (old_state->cause & LOCALTIMERINT) { 
+    if (old_state->cause & LOCALTIMERINT) {
         old_state->cause &= ~LOCALTIMERINT;
         timerInterruptHandler();
     } else if (old_state->cause & TIMERINTERRUPT) {

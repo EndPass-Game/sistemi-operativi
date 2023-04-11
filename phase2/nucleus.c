@@ -1,19 +1,19 @@
-#include <umps3/umps/libumps.h>  // setSTATUS, getStatus
-#include <umps3/umps/cp0.h>  // STATUS_*
+#include "nucleus.h"
 
 #include <list.h>
-#include <pandos_types.h>
 #include <pandos_const.h>  // KERNELSTACK, RAMTOP
+#include <pandos_types.h>
+#include <umps3/umps/cp0.h>      // STATUS_*
+#include <umps3/umps/libumps.h>  // setSTATUS, getStatus
 
-#include "nucleus.h"
-#include "process.h"
-#include "semaphore.h"
-#include "namespace.h"
-#include "scheduler.h"
 #include "exceptions.h"
+#include "namespace.h"
+#include "process.h"
+#include "scheduler.h"
+#include "semaphore.h"
 
 /**
- *  @brief  We define the global variables here, 
+ *  @brief  We define the global variables here,
  * that we have previsly declarate,
  * and export it in nucleus.h
  */
@@ -23,7 +23,6 @@ struct list_head g_ready_queue;
 pcb_t *g_current_process;
 int g_device_semaphores[DEVICE_NUMBER];
 int g_pseudo_clock;
-
 
 extern void test();
 extern void uTLB_RefillHandler();
@@ -37,11 +36,11 @@ int main() {
     initPcbs();
     initASH();
     initNamespaces();
-    
+
     // Load system interval timer to 100ms
     LDIT(PSECOND / 10);
     launchInit();
-    
+
     scheduler();
 
     return 0;
@@ -50,7 +49,7 @@ int main() {
 static void launchInit() {
     g_process_count++;
     pcb_t *pcb = allocPcb();
-    
+
     pcb->p_s.status |= STATUS_IEp | STATUS_TE;
     pcb->p_s.pc_epc = (memaddr) test;
     pcb->p_s.reg_t9 = pcb->p_s.pc_epc;
@@ -75,6 +74,6 @@ static void initGlobalVariable() {
     passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passupvector->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
 
-    passupvector->exception_handler =  (memaddr) exceptionHandler;
+    passupvector->exception_handler = (memaddr) exceptionHandler;
     passupvector->exception_stackPtr = (memaddr) KERNELSTACK;
 }
