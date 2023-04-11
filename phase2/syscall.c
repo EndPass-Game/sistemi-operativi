@@ -121,27 +121,34 @@ pcb_t *sysVerhogen(int *semaddr) {
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
-    // TODO: FIX: how to distinguish between different devices, terminal
-    // devices should have 2 semaphores, one for each terminal (write or read)
-    // but i don't know how to allocate them
+    int num_registers = 0;
 
-    // calculate the address of the status and command registers of the device
-    // see 5.1 pops, pg28. (or see p1test.c)
-    // devreg *statusp = (devreg *) DEVSTATUS(cmdAddr));
-    devreg *commandp = (devreg *) DEVCOMMAND(cmdAddr[0]);
+    if ((memaddr) cmdAddr >= DEVREG_START_ADDR && (memaddr) cmdAddr < DEVREG_END_ADDR) {
+        num_registers = 4;
+    } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
+        num_registers = 2;
+    } // else keep 0;
 
-    int device_number = DEVNUM(cmdAddr[0]);
-    int *semaddr = &g_device_semaphores[device_number];
+    for (int i = 0; i < num_registers; i++) {
+        cmdAddr[i] = cmdValues[i];
+    }
 
-    g_soft_block_count++;
-    sysPasseren(semaddr);
+    if (num_registers > 0) {
+        int *semaddr = &g_device_semaphores[0];  // TODO: use addressresolver instead of 0
 
-    *commandp = (devreg) cmdValues[0];  // TODO: write cmdValues[1] to the read end.
+        g_soft_block_count++;
+        sysPasseren(semaddr);
+        
+        // TODO: potremmo mettere come convezione che semaddr è sempre 0 per i device.
+        if (g_current_process != NULL) {  // stop the process 
+            insertBlocked(semaddr, g_current_process);
+            g_current_process = NULL;
+            scheduler();
+        }
+    }
 
-    if (g_current_process != NULL) {  // stop the process
-        insertBlocked(semaddr, g_current_process);
-        g_current_process = NULL;
-        scheduler();
+    for (int i = 0; i < num_registers; i++) {
+        cmdValues[i] = cmdAddr[i];
     }
 
     return 0;

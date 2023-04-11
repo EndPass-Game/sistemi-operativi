@@ -39,7 +39,7 @@ extern pcb_t *g_current_process;
 extern int g_device_semaphores[DEVICE_NUMBER];  // TODO: vedere quanti device semaphores ci sono
 
 /**
- * @brief Pseudo clock for interval timer
+ * @brief Pseudo clock semaphore for interval timer
  */
 extern int g_pseudo_clock;
 #endif  // _NUCLEUS_H_

@@ -7,12 +7,15 @@
 
 #include "nucleus.h"
 #include "syscall.h"  // syscallHandler
+#include "semaphore.h"  // removeBlocked1
 #include "utils.h"    // memcpy
 
 // TODO: move this in appropriate section
 static void interruptHandler();
 static void nonTimerInterruptHandler(int int_line);
-static void timerInterruptHandler();
+static void handleLocalTimer();
+static void handleSysTimer();
+
 
 void exceptionHandler() {
     state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
@@ -88,10 +91,10 @@ static void interruptHandler() {
     // NOTA: non cambiare l'ordine, è importante per la precedenza
     if (old_state->cause & LOCALTIMERINT) {
         old_state->cause &= ~LOCALTIMERINT;
-        timerInterruptHandler();
+        handleLocalTimer();
     } else if (old_state->cause & TIMERINTERRUPT) {
         old_state->cause &= ~TIMERINTERRUPT;
-        timerInterruptHandler();
+        handleSysTimer();
     } else if (old_state->cause & DISKINTERRUPT) {
         old_state->cause &= ~DISKINTERRUPT;
         nonTimerInterruptHandler(3);
@@ -161,7 +164,21 @@ static void nonTimerInterruptHandler(int int_line) {
     LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
-static void timerInterruptHandler() {
+static void handleSysTimer() {
+    LDIT(PSECOND / 100);    
+
+    // Altra implementazione possibile è chiamare V finché ho processi bloccati.
+    pcb_t *outBlocked = NULL;
+    while ((outBlocked = removeBlocked(&g_pseudo_clock)) != NULL) {
+        insertProcQ(&g_ready_queue, outBlocked);
+    }
+
+    g_pseudo_clock = 0;
+
+    LDST((int *) BIOS_DATA_PAGE_BASE);
+}
+
+static void handleLocalTimer() {
     // Acknowledge the PLT interrupt by loading the timer with a new value. [Section 4.1.4-pops]
     // • Copy the processor state at the time of the exception (located at the start
     // of the BIOS Data Page [Section 3.2.2-pops]) into the Current Process’s pcb

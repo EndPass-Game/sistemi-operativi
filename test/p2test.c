@@ -113,15 +113,15 @@ extern void p5mm();
 /* a procedure to print on terminal 0 */
 void print(char *msg) {
     char     *s       = msg;
-    devregtr *base    = (devregtr *)(TERM0ADDR);
+    devregtr *base    = (devregtr *)(TERM0ADDR + 8);
     devregtr *command = base;
     devregtr  status;
 
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
     while (*s != EOS) {
-        devregtr value[2] = {PRINTCHR | (((devregtr)*s) << 8), 0 };
+        devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8) };
         status         = SYSCALL(DOIO, (int)command, (int)value, 0);
-        if (status != 0 /*|| (value[0] & TERMSTATMASK) != RECVD*/) {
+        if (status != 0 || (value[0] & TERMSTATMASK) != RECVD) {
             PANIC();
         }
         s++;
