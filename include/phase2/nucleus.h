@@ -1,9 +1,9 @@
 #ifndef _NUCLEUS_H_
 #define _NUCLEUS_H_
 #include <list.h>
-#include <process.h>
 #include <pandos_const.h>
 #include <pandos_types.h>
+#include <process.h>
 
 /**
  * @brief : integer indicating the number of started, but not yet
@@ -30,7 +30,6 @@ extern struct list_head g_ready_queue;
  * the current executing process.
  */
 extern pcb_t *g_current_process;
-
 
 /**
  * @brief device semaphores
