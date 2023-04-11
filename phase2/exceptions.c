@@ -172,3 +172,23 @@ static void timerInterruptHandler() {
 
     // TODO:
 }
+
+
+/**
+ * @brief 
+
+La seguente è una proposta di risoluzione degli address dei device in indici:
+
+int addressResolver(int memaddress) {
+    0x1000054 è il base del device normale
+
+    0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
+    invece che 1
+    
+    if (memaddress < 0x10000054) return -1; // non c'è nessun device associato
+    else if (memaddress < 0x10000254) return (memaddress - 0x10000054) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+    else if (memaddress < 0x10000254 + 0x80) return (memaddress - 0x10000254) / (DEVREGSIZE / 2) + 32;
+    else return -1; // nessun device oltre a quello
+}
+
+ */
