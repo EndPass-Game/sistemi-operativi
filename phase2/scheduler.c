@@ -4,11 +4,7 @@
 #include <list.h>
 
 #include "process.h"
-#include "globals.h"
-
-int debug_register = 0;
-
-int break_here();
+#include "nucleus.h"
 
 void scheduler() {
     if (emptyProcQ(&g_ready_queue)) {
@@ -24,19 +20,11 @@ void scheduler() {
             // deadlock found TODO: how to detech deadlocks?
             PANIC();
         }
-    } 
-
-    g_curr_pcb = removeProcQ(&g_ready_queue);
-
-    if (g_curr_pcb == NULL) return;  // this should never happen
-
-    setTIMER(TIMESLICE);
-    LDST(&g_curr_pcb->p_s);
-    // TODO: capisci come deallocare e decrementare quando
-    // un processo finisce
-}
-
-
-int break_here() {
-    return 0;
+    } else {
+        g_current_process = removeProcQ(&g_ready_queue);
+        setTIMER(TIMESLICE);
+        LDST(&g_current_process->p_s);
+        // TODO: capisci come deallocare e decrementare quando
+        // un processo finisce
+    }
 }

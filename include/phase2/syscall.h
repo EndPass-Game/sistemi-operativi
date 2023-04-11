@@ -5,7 +5,7 @@
 
 #include "def-syscall.h"
 
-void syscallHandler(void);
+void syscallHandler(state_t *old_state);
 
 /**
  * @brief Questa system call crea un nuovo processo
@@ -31,7 +31,7 @@ void syscallHandler(void);
  *
  * restituisce il pid del processo creato
  */
-int sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns);
+memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns);
 
 /**
  * @brief Quando invocata, la SYS2 termina il processo
@@ -41,7 +41,7 @@ int sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns);
  * Se il secondo parametro e’ 0 il bersaglio e’ il
  * processo invocante.
  */
-void sysTerminateProcess(int pid);
+void sysTerminateProcess(memaddr pid);
 
 /**
  * @brief Operazione di richiesta di un semaforo binario. Il

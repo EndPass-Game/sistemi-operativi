@@ -182,8 +182,9 @@
 #define POOLSIZE (UPROCMAX * 2)
 /* End of Mikeyg constants */
 
-/* Custom consts */
+/* CUSTOM CONSTS */
 
+#define DEVICE_NUMBER 100
 #define DEVICESTATUSMASK 0xFF
 #define TRANSMITTED 5
 #define DEVREG_START_ADDR 0x10000054
@@ -200,4 +201,6 @@
 
 // Get device address number from interrupt and device number
 #define DEVADDR(INT, DEV) (DEVREG_START_ADDR + ((INT - 3) * 0x80) + (DEV * 0x10))
+
+#define PID_NS 0 
 #endif

@@ -5,20 +5,19 @@
 #include "def-syscall.h"  // sycall codes
 #include "syscall.h"
 #include "semaphore.h"
-#include "globals.h"
+#include "nucleus.h"
 #include "scheduler.h"
 #include "process.h"  // insertProcQ
+#include "utils.h"
 
+void syscallHandler(state_t *old_state) {
 
-void syscallHandler() {
-    state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
-
-    if (old_state->status & STATUS_KUp) {
+    if (old_state->status & STATUS_KUc) {
         // TODO: simulate program trap, syscall without privilege
         // should this be handled here or other place?
     }
 
-    // see 3.5 of pandos.pdf
+    // see 3.5 of pandos.pdf2
     unsigned int syscall_code = old_state->reg_a0;
     unsigned int a1 = old_state->reg_a1;
     unsigned int a2 = old_state->reg_a2;
@@ -35,7 +34,7 @@ void syscallHandler() {
         result = sysCreateProcess((state_t *) a1, (support_t *) a2, (nsd_t *) a3);
         break;
     case SYSCALL_TERMPROCESS:
-        sysTerminateProcess((int) a1);
+        sysTerminateProcess((memaddr) a1);
         break;
     case SYSCALL_PASSEREN:
         sysPasseren((int *) a1);
@@ -84,20 +83,33 @@ void syscallHandler() {
     LDST(old_state);
 }
 
-int sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
-    // TODO;
-    return 0;
+memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
+    pcb_t *pcb = allocPcb();
+    if (pcb == NULL) {
+        return -1;
+    }
+    g_process_count++;
+    memcpy((void *) &pcb->p_s, (void *)statep, sizeof(state_t));
+    pcb->p_supportStruct = supportp;  // if supportp is null, it's ok
+    pcb->namespaces[ns->n_type] = ns;
+    
+    insertProcQ(&g_ready_queue, pcb);
+    insertChild(g_current_process, pcb);
+
+    // p_time and p_semadd are null/0 initialized by allocPcb.
+    return (memaddr) pcb;
 }
 
-void sysTerminateProcess(int pid) {
-    // TODO;
+void sysTerminateProcess(memaddr pid) {
+    pcb_t *current = (pcb_t *) pid;
+    terminateProcess(current);
 }
 
 void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
-        // TODO: should we handle softblock here or other part?
-        insertBlocked(semaddr, g_curr_pcb);
-        g_curr_pcb = NULL;
+        // TODO: should we handle softblock here or other part? NO, NO and NO
+        insertBlocked(semaddr, g_current_process);
+        g_current_process = NULL;
         scheduler();
     } else {
         *semaddr = *semaddr - 1;
@@ -123,44 +135,88 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     // calculate the address of the status and command registers of the device
     // see 5.1 pops, pg28. (or see p1test.c)
     // devreg *statusp = (devreg *) DEVSTATUS(cmdAddr));
-    devreg *commandp = (devreg *) DEVCOMMAND(cmdAddr);
+    devreg *commandp = (devreg *) DEVCOMMAND(cmdAddr[0]);
 
-    int device_number = DEVNUM(cmdAddr);
-    int *semaddr = &g_dev_sem[device_number];
+    int device_number = DEVNUM(cmdAddr[0]);
+    int *semaddr = &g_device_semaphores[device_number];
 
+    g_soft_block_count++;
     sysPasseren(semaddr);
+    
     *commandp = (devreg) cmdValues[0];  // TODO: write cmdValues[1] to the read end.
 
-    if (g_curr_pcb != NULL) {  // stop the process 
-        insertBlocked(semaddr, g_curr_pcb);
-        g_curr_pcb = NULL;
+    if (g_current_process != NULL) {  // stop the process 
+        insertBlocked(semaddr, g_current_process);
+        g_current_process = NULL;
+        scheduler();
     }
-    g_soft_block_count++;
-    scheduler();
 
     return 0;
 }
 
 int sysGetTime(void) {
-    // TODO;
-    return 0;
+    // TODO: verificare se il p_time è gestito dallo status (cosa che non dovrebbe essere)
+    return g_current_process->p_time;
 }
 
 void sysClockWait(void) {
-    // TODO;
+    //TODO: the other part is handled in the interrupt
+    // the interrupt need to mange this semaphore lika a binary sempahore
+    // **not an ordinary semaphore**
+    sysPasseren(&g_pseudo_clock);
 }
 
 support_t *sysGetSupportPtr(void) {
-    // TODO;
-    return NULL;
+    return g_current_process->p_supportStruct;
 }
 
-int sysGetProcessID(int parent) {
-    // TODO;
+int sysGetProcessID(int is_parent) {
+    pcb_t *parent_pcb = g_current_process->p_parent;
+    
+    nsd_t *parent_namespace = NULL;
+    if (parent_pcb != NULL) {
+        parent_namespace = getNamespace(parent_pcb, PID_NS);
+    }
+    nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
+
+    if (parent_namespace != current_namespace) {
+        return 0;
+    }
+
+    if (!is_parent) {
+        return g_current_process;
+    }else{
+        return parent_pcb;        
+    }
+
     return 0;
 }
 
 int sysGetChildren(int *children, int size) {
-    // TODO;
-    return 0;
+    nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
+    return getChildsByNamespace(children, &size, current_namespace, g_current_process);
+}
+
+int getChildsByNamespace(int *children, int *remaining_size, nsd_t* current_namespace, pcb_t *pcb){
+    if(getNamespace(pcb, PID_NS) == current_namespace) return 0;
+    if((*remaining_size) > 0){
+        *remaining_size -= 1;
+        children[*remaining_size] = pcb;
+    }
+    int same_namespace_num = 0;
+    struct list_head *pos = NULL;
+    
+    list_for_each(pos, &pcb->p_child) {
+        pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
+        nsd_PTR child_nsd = getNamespace(curr_pcb, PID_NS);
+        
+        same_namespace_num += getChildsByNamespace(
+            children,
+            remaining_size,
+            current_namespace,
+            curr_pcb
+        ) + 1;  // +1 per contare anche child
+    }
+    
+    return same_namespace_num;
 }

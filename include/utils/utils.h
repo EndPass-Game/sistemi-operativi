@@ -41,4 +41,9 @@ static inline void list_add_safe(struct list_head *new, struct list_head *list) 
     list_add(new, list);
 }
 
+
+/**
+ * @brief Due pointer byte per byte di lungezza size
+ */
+void memcpy(void *ptr, void* ptr2, u32 size) ;
 #endif  // _UTILS_H

@@ -53,3 +53,14 @@ Il campo `p_list` è utilizzato come concatenatore in 3 liste principali:
 
 È importante assumere che queste liste siano tutti e tre mutualmente esclusive in quanto altrimenti avremmo alcuni conflitti, i quali porterebbero a uno stato invalido.
 In particolare potremmo dire che un processo che sia fermo sulla lista dei semafori sia in stato di *`waiting`* mentre, se è nella coda dei processi, si potrebbe dire nello stato di *`running`*, altrimenti se è stato allocato e non è presente nella coda dei processi, è in stato di *`ready`*.
+
+
+# Phase 2
+
+## PID
+
+Abbiamo deciso di utilizzare i pointers ai `pcb_t` come i PID del programma
+
+## Global process
+
+Se non ho nessun processo che sta runnando allora lo metto a 0

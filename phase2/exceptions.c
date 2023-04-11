@@ -4,8 +4,8 @@
 #include <umps3/umps/cp0.h>    // CAUSE_GET_EXCCODE, exeption codes EXC_*
 
 #include "exceptions.h"
-#include "syscall.h"  // syscallHandler
-#include "globals.h"  
+#include "syscall.h"  // syscallHandler  
+#include "nucleus.h"
 
 // TODO: move this in appropriate section
 static void passUpOrDie();
@@ -41,7 +41,7 @@ void exceptionHandler() {
         break;
 
     case EXC_SYS:
-        syscallHandler();
+        syscallHandler(old_state);
         break;
     default:
         passUpOrDie();
@@ -153,12 +153,12 @@ static void nonTimerInterruptHandler(int int_line) {
     int status_code = *statusp;
     *statusp = ACK;
 
-    int *semaddr = &g_dev_sem[devnumber];
+    int *semaddr = &g_device_semaphores[devnumber];
+    g_soft_block_count--;
     pcb_t *unblocked = sysVerhogen(semaddr);
     if (unblocked == NULL) {
         return;  // This should never happen
     }
-    g_soft_block_count--;
     unblocked->p_s.reg_v0 = status_code;
 
     LDST((int *) BIOS_DATA_PAGE_BASE);

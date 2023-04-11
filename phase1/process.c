@@ -148,6 +148,16 @@ pcb_t *outChild(pcb_t *child) {
     return NULL;
 }
 
+
+void terminateProcess(pcb_t *pcb) {
+    struct list_head *pos = NULL;
+    list_for_each(pos, &pcb->p_child) {
+        pcb_t *child_proc = container_of(pos, pcb_t, p_sib);
+        terminateProcess(child_proc);
+    }
+    freePcb(pcb);
+}
+
 static void reset(pcb_t *pcb) {
     memset(pcb, 0, sizeof(pcb_t));
 

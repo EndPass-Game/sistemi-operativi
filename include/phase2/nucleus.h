@@ -1,10 +1,15 @@
+#ifndef _NUCLEUS_H_
+#define _NUCLEUS_H_
+#include <list.h>
+#include <process.h>
+#include <pandos_const.h>
 #include <pandos_types.h>
 
 /**
  * @brief : integer indicating the number of started, but not yet
  * terminated processes.
  */
-int g_process_count;
+extern int g_process_count;
 
 /**
  * @brief A process can be either in the “ready,” “running,” or
@@ -12,32 +17,30 @@ int g_process_count;
  * of started, but not terminated processes that in are the “blocked” state
  * due to an I/O or timer request.
  */
-int g_soft_block_count;
+extern int g_soft_block_count;
 
 /**
  * @brief Construct a new list head objectTail pointer to a queue of pcbs that are in the “ready”
  * state.
  */
-struct list_head g_ready_queue;
+extern struct list_head g_ready_queue;
 
 /**
  * @brief Pointer to the pcb that is in the “running” state, i.e.
  * the current executing process.
  */
-pcb_t *g_curr_pcb;
+extern pcb_t *g_current_process;
+
 
 /**
  * @brief device semaphores
+ *
  * TODO: how many device semaphores are there?
  */
-int g_dev_sem[64];
+extern int g_device_semaphores[DEVICE_NUMBER];  // TODO: vedere quanti device semaphores ci sono
 
-void initKernelGlobals() {
-    g_process_count = 0;
-    g_soft_block_count = 0;
-    INIT_LIST_HEAD(&g_ready_queue);
-    g_curr_pcb = NULL;
-    for (int i = 0; i < 64; i++) {
-        g_dev_sem[i] = 1;
-    }
-}
+/**
+ * @brief Pseudo clock for interval timer
+ */
+extern int g_pseudo_clock;
+#endif  // _NUCLEUS_H_
