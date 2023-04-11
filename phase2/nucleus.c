@@ -69,7 +69,7 @@ static void initGlobalVariable() {
     for (int i = 0; i < DEVICE_NUMBER; i++) {
         g_device_semaphores[i] = 0;
     }
-    pseudo_clock = 1;
+    g_pseudo_clock = 1;
 
     passupvector_t *passupvector = (passupvector_t *) PASSUPVECTOR;
     passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler;

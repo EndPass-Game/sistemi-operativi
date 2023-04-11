@@ -9,6 +9,7 @@
 #include "scheduler.h"
 #include "process.h"  // insertProcQ
 #include "utils.h"
+#include "namespace.h"
 
 void syscallHandler(state_t *old_state) {
 
@@ -184,31 +185,31 @@ int sysGetProcessID(int is_parent) {
     }
 
     if (!is_parent) {
-        return g_current_process;
+        return (int) g_current_process;
     }else{
-        return parent_pcb;        
+        return (int) parent_pcb;        
     }
 
     return 0;
 }
+static int getChildsByNamespace(int *children, int *remaining_size, nsd_t* current_namespace, pcb_t *pcb);
 
 int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
     return getChildsByNamespace(children, &size, current_namespace, g_current_process);
 }
 
-int getChildsByNamespace(int *children, int *remaining_size, nsd_t* current_namespace, pcb_t *pcb){
+static int getChildsByNamespace(int *children, int *remaining_size, nsd_t* current_namespace, pcb_t *pcb){
     if(getNamespace(pcb, PID_NS) == current_namespace) return 0;
     if((*remaining_size) > 0){
         *remaining_size -= 1;
-        children[*remaining_size] = pcb;
+        children[*remaining_size] = (int) pcb;
     }
     int same_namespace_num = 0;
     struct list_head *pos = NULL;
     
     list_for_each(pos, &pcb->p_child) {
         pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
-        nsd_PTR child_nsd = getNamespace(curr_pcb, PID_NS);
         
         same_namespace_num += getChildsByNamespace(
             children,
