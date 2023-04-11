@@ -41,9 +41,9 @@ if(PHASE1)
     message(STATUS "Building for ONLY phase1")
     SET (EXEC_NAME "phase1.kernel.elf") 
 
-    add_definitions(-DPHASE1_TEST)
     add_executable(${EXEC_NAME}
         ${SOURCES_PHASE1}
+        test/p1test.c
         ${CMAKE_CURRENT_BINARY_DIR}/crtso.o
         ${CMAKE_CURRENT_BINARY_DIR}/libumps.o
     )
@@ -52,10 +52,10 @@ else()
     message(STATUS "Building phase1 AND phase2")
     SET (EXEC_NAME "phase2.kernel.elf") 
 
-    add_definitions(-DPHASE2)
     add_executable(${EXEC_NAME}
         ${SOURCES_PHASE1}
         ${SOURCES_PHASE2}
+        test/p2test.c
         ${CMAKE_CURRENT_BINARY_DIR}/crtso.o
         ${CMAKE_CURRENT_BINARY_DIR}/libumps.o
     )

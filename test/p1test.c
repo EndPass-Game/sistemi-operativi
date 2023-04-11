@@ -13,7 +13,6 @@
  *      Modified by Davide Berardi on November 23, 2022
  */
 
-#ifdef PHASE1_TEST
 #include <pandos_const.h>
 #include <pandos_types.h>
 #include <umps3/umps/libumps.h>
@@ -369,5 +368,3 @@ int main(void) {
     addokbuf("So Long and Thanks for All the Fish\n");
     return 0;
 }
-
-#endif // PHASE1_TEST
