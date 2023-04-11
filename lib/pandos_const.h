@@ -191,6 +191,14 @@
 #define TERMREG_START_ADDR 0x10000254
 #define TERMREG_END_ADDR 0x10000264
 #define INTDEV_BITMAP 0x10000040
+#define DISK_INTLINE 3
+#define FLASH_INTLINE 4
+#define NET_INTLINE 5
+#define PRINTER_INTLINE 6
+#define TERM_INTLINE 7
+
+#define RECEIVED 5
+#define TRANSMITTED 5
 
 // Get the status word of the device register
 #define DEVSTATUS(T) (T + (TRANSTATUS * DEVREGLEN))

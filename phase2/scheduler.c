@@ -6,25 +6,30 @@
 #include "nucleus.h"
 #include "process.h"
 
+int debug[10];
 void scheduler() {
     if (emptyProcQ(&g_ready_queue)) {
         if (g_process_count == 0) {
             HALT();
         } else if (g_process_count > 0 && g_soft_block_count > 0) {
-            // TODO: this code is not tested, should not work.
-            // set the status register to enable interrupts
+            // set the status register to enable all interrupts
             // disable the Process Local Timer
-            setSTATUS((getSTATUS() | STATUS_IEc) & ~STATUS_TE);
+            unsigned int old_status = getSTATUS();
+            setSTATUS((old_status | STATUS_IEc | STATUS_IM_MASK) & ~STATUS_TE);
             WAIT();
+            setSTATUS(old_status);
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
             // deadlock found TODO: how to detech deadlocks?
             PANIC();
         }
-    } else {
-        g_current_process = removeProcQ(&g_ready_queue);
-        setTIMER(TIMESLICE);
-        LDST(&g_current_process->p_s);
-        // TODO: capisci come deallocare e decrementare quando
-        // un processo finisce
     }
+
+    g_current_process = removeProcQ(&g_ready_queue);
+    debug[0] = g_current_process->p_s.status;
+    debug[1] = g_current_process->p_s.pc_epc;
+    
+    setTIMER(TIMESLICE);
+    LDST(&g_current_process->p_s);
+    // TODO: capisci come deallocare e decrementare quando
+    // un processo finisce
 }

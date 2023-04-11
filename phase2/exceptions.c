@@ -97,16 +97,16 @@ static void interruptHandler() {
         handleSysTimer();
     } else if (old_state->cause & DISKINTERRUPT) {
         old_state->cause &= ~DISKINTERRUPT;
-        nonTimerInterruptHandler(3);
+        nonTimerInterruptHandler(DISK_INTLINE);
     } else if (old_state->cause & FLASHINTERRUPT) {
         old_state->cause &= ~FLASHINTERRUPT;
-        nonTimerInterruptHandler(4);
+        nonTimerInterruptHandler(FLASH_INTLINE);
     } else if (old_state->cause & PRINTINTERRUPT) {
         old_state->cause &= ~PRINTINTERRUPT;
-        nonTimerInterruptHandler(5);
+        nonTimerInterruptHandler(PRINTER_INTLINE);
     } else if (old_state->cause & TERMINTERRUPT) {
         old_state->cause &= ~TERMINTERRUPT;
-        nonTimerInterruptHandler(6);
+        nonTimerInterruptHandler(TERM_INTLINE);
     }
 
     if (old_state->cause & interrupt_mask) {
@@ -114,46 +114,44 @@ static void interruptHandler() {
     }
 }
 
-static void nonTimerInterruptHandler(int int_line) {
-    // 1. Calculate the address for this device’s device register. [Section 5.1-pops]
-    // 2. Save off the status code from the device’s device register.
-    // 3. Acknowledge the outstanding interrupt. This is accomplished by writing
-    // the acknowledge command code in the interrupting device’s device register.
-    // Alternatively, writing a new command in the interrupting device’s device
-    // register will also acknowledge the interrupt.
-    // 4. Perform a V operation on the Nucleus maintained semaphore associated
-    // with this (sub)device. This operation should unblock the process (pcb)
-    // which initiated this I/O operation and then requested to wait for its completion via a SYS5 operation.
-    // 5. Place the stored off status code in the newly unblocked pcb’s v0 register.
-    // 6. Insert the newly unblocked pcb on the Ready Queue, transitioning this process from the “blocked” state to the “ready” state.
-    // 7. Return control to the Current Process: Perform a LDST on the saved exception state (located at the start of the BIOS Data Page [Section 3.4]).
-
-    // NOTA: Calcolo dell'indirizzo del device register
-    // int_line mi indica il numero di linea di interrupt, poi esiste la zona di
-    // INTERRUPT DEVICES BIT MAP che è una work per dispositivo utilizzato per indicare
-    // se un certo dispostitivo è ha quella linea accesa o meno.
-
+static void nonTimerInterruptHandler(int device_type) {
+    // Sto andando a guardare una zona di memoria che è formata da 5 words, una word
+    // per device, se il bit i di questa word è on, allora ho trovato il device-iesimo
+    // che ha creato l'interrupt.
     int *int_dev_bitmap = (int *) INTDEV_BITMAP;  // TODO: metterlo fra le costanti
     int *devreg_addr = NULL;
-    int devnumber = -1;
     for (int i = 0; i < 8; i++) {
-        if (int_dev_bitmap[i] & (1 << int_line)) {
-            devreg_addr = (int *) DEVADDR(int_line, i);
-            devnumber = i;
+        if (int_dev_bitmap[device_type - 3] & (1 << i)) {
+            devreg_addr = (int *) DEVADDR(device_type, i);
             break;
         }
     }
 
-    if (devreg_addr == NULL) {
-        return;  // This should never happen
+    if (devreg_addr == NULL) return;  // This should never happen
+
+    int status_code = 0;
+    if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
+        devreg *statusp = (devreg *) devreg_addr;
+        devreg *commandp = (devreg *) (devreg_addr + 1);
+        status_code = *statusp;
+        *commandp = ACK;
+    } else if ((memaddr) devreg_addr >= TERMREG_START_ADDR && (memaddr) devreg_addr < TERMREG_END_ADDR) {
+        // see pops 5.7 page 43, acknoledge both receiver and trasmitter if active
+        termdev_t *receiver = (termdev_t *) devreg_addr;
+        termdev_t *transmitter = (termdev_t *) (devreg_addr + sizeof(termdev_t) / sizeof(int));
+        if ((receiver->status & DEVICESTATUSMASK) == RECEIVED) {
+            status_code = receiver->status;
+            receiver->command = ACK;
+        }
+        
+        if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
+            status_code = transmitter->status;  // NOTE: the status code is overwritten (but should be the same)
+            transmitter->command = ACK;
+        }
     }
 
-    devreg *statusp = (devreg *) DEVSTATUS(devreg_addr);
-
-    int status_code = *statusp;
-    *statusp = ACK;
-
-    int *semaddr = &g_device_semaphores[devnumber];
+    // TODO: use g_device semaphore resolver
+    int *semaddr = &g_device_semaphores[0];
     g_soft_block_count--;
     pcb_t *unblocked = sysVerhogen(semaddr);
     if (unblocked == NULL) {

@@ -79,5 +79,10 @@ typedef struct semd_t {
 /* Custom types */
 typedef unsigned int devreg;
 
+typedef struct termdev {
+    devreg status;
+    devreg command;
+} termdev_t;
+
 
 #endif
