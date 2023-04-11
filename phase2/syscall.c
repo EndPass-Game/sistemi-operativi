@@ -10,6 +10,7 @@
 #include "process.h"  // insertProcQ
 #include "utils.h"
 #include "namespace.h"
+#include "exceptions.h"
 
 void syscallHandler(state_t *old_state) {
 
@@ -62,16 +63,7 @@ void syscallHandler(state_t *old_state) {
         result = sysGetChildren((int *) a1, (int) a2);
         break;
     default:
-        // Perform passupor die TODO: decide if should be own func
-        // TODO: check support vector to decide if you should die
-        if (/*check support == NULL*/ false) {
-
-        } else {
-            passupvector_t *passupvector = (passupvector_t *) (BIOS_EXEC_HANDLERS_ADDRS);
-            // Per il nucleo ho solamente una locazione in cui salvare lo stato
-            STST((void *) BIOS_DATA_PAGE_BASE);
-            ((void (*)())passupvector->exception_handler)();
-        }
+        passUpOrDie(GENERALEXCEPT);
         break;
     }
 
@@ -157,6 +149,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 
 int sysGetTime(void) {
     // TODO: verificare se il p_time è gestito dallo status (cosa che non dovrebbe essere)
+    // 3.8 pandos dovrebbe avere la risposta su come fare.
     return g_current_process->p_time;
 }
 

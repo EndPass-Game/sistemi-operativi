@@ -6,9 +6,9 @@
 #include "exceptions.h"
 #include "syscall.h"  // syscallHandler  
 #include "nucleus.h"
+#include "utils.h"  // memcpy
 
 // TODO: move this in appropriate section
-static void passUpOrDie();
 static void interruptHandler();
 static void nonTimerInterruptHandler(int int_line);
 static void timerInterruptHandler();
@@ -26,7 +26,7 @@ void exceptionHandler() {
     case EXC_MOD:
     case EXC_TLBL:
     case EXC_TLBS:
-        // TODO: pass to TLB handler
+        passUpOrDie(PGFAULTEXCEPT);
         break;
     case EXC_ADEL:
     case EXC_ADES:
@@ -36,15 +36,14 @@ void exceptionHandler() {
     case EXC_RI:
     case EXC_CPU:
     case EXC_OV:
-        // TODO: pass to program trap handler
-        passUpOrDie();
+        passUpOrDie(GENERALEXCEPT);
         break;
 
     case EXC_SYS:
         syscallHandler(old_state);
         break;
     default:
-        passUpOrDie();
+        passUpOrDie(GENERALEXCEPT);
         // TODO: invent a default behaviour, could also be nothing
         break;
     }
@@ -52,14 +51,13 @@ void exceptionHandler() {
     return;
 }
 
-static void passUpOrDie() {
-    if (/*check support vecto presence*/ false) {
-        // TODO;
+void passUpOrDie(int passupType) {
+    if (g_current_process == NULL || g_current_process->p_supportStruct == NULL) {
+        sysTerminateProcess((memaddr) g_current_process);
     } else {
-        // support_t *support = NULL; // TODO: assign that of the state, how to get the pcb?
-
-        // Ok for this part we should wait the files, but it's the same for TLB and
-        // interrupts!
+        state_t *target_state = &g_current_process->p_supportStruct->sup_exceptState[passupType];
+        memcpy((void *) BIOS_DATA_PAGE_BASE, (void *) target_state, sizeof(state_t));
+        LDCXT(target_state->reg_sp, target_state->status, target_state->pc_epc);
     }
 }
 
