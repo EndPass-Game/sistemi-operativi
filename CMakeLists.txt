@@ -4,6 +4,8 @@ project (sistemi_operativi)
     
 set(UMPSDIR "/usr/share/umps3")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_C_COMPILER "mipsel-linux-gnu-gcc" CACHE STRING "Set C Compiler" FORCE)
 set (CMAKE_C_FLAGS "-Wall -Werror -g -ffreestanding -mips1 -mabi=32 -mno-gpopt -EL -G 0 -mno-abicalls -fno-pic -mfp32" 
     CACHE STRING "Set C Compiler Flags" FORCE)

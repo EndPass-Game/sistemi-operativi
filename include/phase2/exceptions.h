@@ -3,6 +3,6 @@
 
 void exceptionHandler();
 
-void passUpOrDie();
+void passUpOrDie(int passupType);
 
 #endif /* _EXCEPTIONS_H */
