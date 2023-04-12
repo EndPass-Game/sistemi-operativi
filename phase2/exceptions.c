@@ -62,7 +62,7 @@ void passUpOrDie(int passupType) {
         sysTerminateProcess((memaddr) g_current_process);
     } else {
         state_t *target_state = &g_current_process->p_supportStruct->sup_exceptState[passupType];
-        memcpy((void *) BIOS_DATA_PAGE_BASE, (void *) target_state, sizeof(state_t));
+        memcpy((void *) target_state, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
         LDCXT(target_state->reg_sp, target_state->status, target_state->pc_epc);
     }
 }
@@ -176,7 +176,6 @@ static void handleLocalTimer() {
 /**
  * @brief La seguente è una proposta di risoluzione degli address dei device in indici:
  */
-
 int resolveDeviceAddress(memaddr memaddress) {
     // 0x1000054 è il base del device normale
 
