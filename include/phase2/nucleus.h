@@ -43,6 +43,5 @@ extern int g_device_semaphores[DEVICE_NUMBER];  // TODO: vedere quanti device se
  */
 extern int g_pseudo_clock;
 
-
 extern int g_debug[20];
 #endif  // _NUCLEUS_H_

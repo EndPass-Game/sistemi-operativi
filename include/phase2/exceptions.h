@@ -8,8 +8,8 @@ void exceptionHandler();
 /**
  * @brief TODO:
  * Implements pass up or die logic
- * 
- * @param passupType 
+ *
+ * @param passupType
  */
 void passUpOrDie(int passupType);
 

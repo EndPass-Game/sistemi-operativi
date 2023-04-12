@@ -6,10 +6,10 @@
 #include <umps3/umps/types.h>
 
 #include "nucleus.h"
+#include "scheduler.h"
 #include "semaphore.h"  // removeBlocked1
 #include "syscall.h"    // syscallHandler
 #include "utils.h"      // memcpy
-#include "scheduler.h"
 
 // TODO: move this in appropriate section
 static void interruptHandler();
@@ -177,15 +177,18 @@ static void handleLocalTimer() {
  * @brief La seguente è una proposta di risoluzione degli address dei device in indici:
  */
 
-
 int resolveDeviceAddress(memaddr memaddress) {
     // 0x1000054 è il base del device normale
 
     // 0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
     // invece che 1
 
-    if (memaddress < DEVREG_START_ADDR) return -1; // non c'è nessun device associato
-    else if (memaddress < DEVREG_END_ADDR) return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
-    else if (memaddress < TERMREG_END_ADDR) return (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2) + 32; // 32 è il numero dei device non term
-    else return -1; // nessun device oltre a quello
+    if (memaddress < DEVREG_START_ADDR)
+        return -1;  // non c'è nessun device associato
+    else if (memaddress < DEVREG_END_ADDR)
+        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+    else if (memaddress < TERMREG_END_ADDR)
+        return (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2) + 32;  // 32 è il numero dei device non term
+    else
+        return -1;  // nessun device oltre a quello
 }

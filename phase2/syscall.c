@@ -71,7 +71,6 @@ void syscallHandler(state_t *old_state) {
     // see 7.2.3 pops for return register
     old_state->reg_v0 = result;
 
-
     LDST(old_state);
 }
 
@@ -125,13 +124,13 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
         num_registers = 4;
     } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
         num_registers = 2;
-    }  else return -1;
+    } else
+        return -1;
     // TODO: gestisci IO su dispositivo non installato, dovrebbe ritornare -1, leggi pg29
 
     for (int i = 0; i < num_registers; i++) {
         cmdAddr[i] = cmdValues[i];
     }
-
 
     // int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
     int dev_num = 0;

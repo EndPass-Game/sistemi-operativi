@@ -25,7 +25,6 @@ int g_device_semaphores[DEVICE_NUMBER];
 int g_pseudo_clock;
 int g_debug[20];
 
-
 extern void test();
 extern void uTLB_RefillHandler();
 
