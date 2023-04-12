@@ -50,7 +50,7 @@ static void launchInit() {
     g_process_count++;
     pcb_t *pcb = allocPcb();
 
-    pcb->p_s.status |= STATUS_IEp | STATUS_TE;
+    pcb->p_s.status |= STATUS_IEp | STATUS_TE | STATUS_IM_MASK;
     pcb->p_s.pc_epc = (memaddr) test;
     pcb->p_s.reg_t9 = pcb->p_s.pc_epc;
 

@@ -8,7 +8,7 @@
 
 int debug[10];
 void scheduler() {
-    if (emptyProcQ(&g_ready_queue)) {
+    while (emptyProcQ(&g_ready_queue)) {
         if (g_process_count == 0) {
             HALT();
         } else if (g_process_count > 0 && g_soft_block_count > 0) {
@@ -20,13 +20,13 @@ void scheduler() {
             setSTATUS(old_status);
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
             // deadlock found TODO: how to detech deadlocks?
+            debug[3] = 0xFFFFFFFF;
             PANIC();
         }
     }
 
     g_current_process = removeProcQ(&g_ready_queue);
-    debug[0] = g_current_process->p_s.status;
-    debug[1] = g_current_process->p_s.pc_epc;
+    debug[0] = g_current_process->p_s.reg_t9;
     
     setTIMER(TIMESLICE);
     LDST(&g_current_process->p_s);

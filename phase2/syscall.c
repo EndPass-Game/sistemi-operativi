@@ -100,7 +100,8 @@ void sysTerminateProcess(memaddr pid) {
 
 void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
-        // TODO: should we handle softblock here or other part? NO, NO and NO
+        memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
+        g_current_process->p_s.pc_epc += WORDLEN;
         insertBlocked(semaddr, g_current_process);
         g_current_process = NULL;
         scheduler();
@@ -137,7 +138,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
         int *semaddr = &g_device_semaphores[0];  // TODO: use addressresolver instead of 0
 
         g_soft_block_count++;
-        sysPasseren(semaddr);
+        SYSCALL(PASSEREN, (memaddr) semaddr, 0, 0);
         
         // TODO: potremmo mettere come convezione che semaddr è sempre 0 per i device.
         if (g_current_process != NULL) {  // stop the process 

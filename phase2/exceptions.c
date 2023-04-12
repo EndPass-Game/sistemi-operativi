@@ -12,7 +12,7 @@
 
 // TODO: move this in appropriate section
 static void interruptHandler();
-static void nonTimerInterruptHandler(int int_line);
+static void handleDeviceInt(int int_line);
 static void handleLocalTimer();
 static void handleSysTimer();
 
@@ -25,7 +25,7 @@ void exceptionHandler() {
 
     switch (cause_bits) {
         case EXC_INT:
-            interruptHandler();
+            interruptHandler(old_state);
             break;
         case EXC_MOD:
         case EXC_TLBL:
@@ -65,8 +65,7 @@ void passUpOrDie(int passupType) {
     }
 }
 
-static void interruptHandler() {
-    state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
+static void interruptHandler(state_t *old_state) {
 
     int interrupt_mask = DISKINTERRUPT |
                          FLASHINTERRUPT |
@@ -97,28 +96,29 @@ static void interruptHandler() {
         handleSysTimer();
     } else if (old_state->cause & DISKINTERRUPT) {
         old_state->cause &= ~DISKINTERRUPT;
-        nonTimerInterruptHandler(DISK_INTLINE);
+        handleDeviceInt(DISK_INTLINE);
     } else if (old_state->cause & FLASHINTERRUPT) {
         old_state->cause &= ~FLASHINTERRUPT;
-        nonTimerInterruptHandler(FLASH_INTLINE);
+        handleDeviceInt(FLASH_INTLINE);
     } else if (old_state->cause & PRINTINTERRUPT) {
         old_state->cause &= ~PRINTINTERRUPT;
-        nonTimerInterruptHandler(PRINTER_INTLINE);
+        handleDeviceInt(PRINTER_INTLINE);
     } else if (old_state->cause & TERMINTERRUPT) {
         old_state->cause &= ~TERMINTERRUPT;
-        nonTimerInterruptHandler(TERM_INTLINE);
+        handleDeviceInt(TERM_INTLINE);
     }
 
     if (old_state->cause & interrupt_mask) {
-        interruptHandler();
+        interruptHandler(old_state);
     }
 }
 
-static void nonTimerInterruptHandler(int device_type) {
+int debug_arr[2];
+static void handleDeviceInt(int device_type) {
     // Sto andando a guardare una zona di memoria che è formata da 5 words, una word
     // per device, se il bit i di questa word è on, allora ho trovato il device-iesimo
     // che ha creato l'interrupt.
-    int *int_dev_bitmap = (int *) INTDEV_BITMAP;  // TODO: metterlo fra le costanti
+    int *int_dev_bitmap = (int *) INTDEV_BITMAP;
     int *devreg_addr = NULL;
     for (int i = 0; i < 8; i++) {
         if (int_dev_bitmap[device_type - 3] & (1 << i)) {
@@ -157,13 +157,17 @@ static void nonTimerInterruptHandler(int device_type) {
     if (unblocked == NULL) {
         return;  // This should never happen
     }
+
+    debug_arr[0] = emptyProcQ(&g_ready_queue);
+    debug_arr[1] = headBlocked(semaddr) == NULL;
+
     unblocked->p_s.reg_v0 = status_code;
 
     LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
 static void handleSysTimer() {
-    LDIT(PSECOND / 100);    
+    LDIT(PSECOND / 10);   
 
     // Altra implementazione possibile è chiamare V finché ho processi bloccati.
     pcb_t *outBlocked = NULL;
