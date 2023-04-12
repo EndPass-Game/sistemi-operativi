@@ -58,11 +58,8 @@ void sysPasseren(int *semaddr);
  * variabile di tipo intero passata per indirizzo.
  * L’indirizzo della variabile agisce da identificatore
  * per il semaforo.
- *
- * @return puntatore al pcb del processo che ha rilasciato, NULL
- * se non aveva nessun processo in attesa
  */
-pcb_t *sysVerhogen(int *semaddr);
+void sysVerhogen(int *semaddr);
 
 /**
  * @brief – Effettua un’operazione di I/O. CmdValues e’ un vettore di 2

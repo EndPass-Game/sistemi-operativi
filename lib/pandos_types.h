@@ -84,5 +84,10 @@ typedef struct termdev {
     devreg command;
 } termdev_t;
 
+typedef struct sysiostate {
+    state_t status;
+    int *cmd_addr;
+    int *cmd_values;
+} sysiostate_t;
 
 #endif

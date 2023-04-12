@@ -184,13 +184,14 @@
 
 /* CUSTOM CONSTS */
 
-#define DEVICE_NUMBER 100
+#define DEVICE_NUMBER 48  // number of devices installed in umps3
 #define DEVICESTATUSMASK 0xFF
 #define DEVREG_START_ADDR 0x10000054
 #define DEVREG_END_ADDR 0x10000254
 #define TERMREG_START_ADDR 0x10000254
 #define TERMREG_END_ADDR 0x10000264
-#define INTDEV_BITMAP 0x10000040
+#define INTDEV_BITMAP 0x10000040  // Address of the interrupt devices bitmap
+#define INSTDEV_BITMPA 0X1000002C  // Address of the installed devices bitmap
 #define DISK_INTLINE 3
 #define FLASH_INTLINE 4
 #define NET_INTLINE 5
@@ -199,15 +200,6 @@
 
 #define RECEIVED 5
 #define TRANSMITTED 5
-
-// Get the status word of the device register
-#define DEVSTATUS(T) (T + (TRANSTATUS * DEVREGLEN))
-
-// Get the command word of the device register
-#define DEVCOMMAND(T) (T + (TRANCOMMAND * DEVREGLEN))
-
-// Get the device number from the device register address
-#define DEVNUM(T) (((int) cmdAddr - DEVREG_START_ADDR) / DEVREGSIZE)
 
 // Get device address number from interrupt and device number
 #define DEVADDR(INT, DEV) (DEVREG_START_ADDR + ((INT - 3) * 0x80) + (DEV * 0x10))

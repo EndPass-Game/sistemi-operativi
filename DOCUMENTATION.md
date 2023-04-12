@@ -64,3 +64,8 @@ Abbiamo deciso di utilizzare i pointers ai `pcb_t` come i PID del programma
 ## Global process
 
 Se non ho nessun processo che sta runnando allora lo metto a 0
+
+## Sincronizzazione devices
+
+Ogni device contiene un proprio semaforo di sincronizzazione inizializzato a 0.
+Ogni richiesta di input output

@@ -9,6 +9,7 @@
 #include "semaphore.h"  // removeBlocked1
 #include "syscall.h"    // syscallHandler
 #include "utils.h"      // memcpy
+#include "scheduler.h"
 
 // TODO: move this in appropriate section
 static void interruptHandler();
@@ -43,6 +44,8 @@ void exceptionHandler() {
             break;
 
         case EXC_SYS:
+            // prevent infinite loop, see 3.5.10 pandos.pdf
+            old_state->pc_epc += WORDLEN;
             syscallHandler(old_state);
             break;
         default:
@@ -109,9 +112,10 @@ static void interruptHandler(state_t *old_state) {
     if (old_state->cause & interrupt_mask) {
         interruptHandler(old_state);
     }
+
+    LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
-int debug_arr[2];
 static void handleDeviceInt(int device_type) {
     // Sto andando a guardare una zona di memoria che è formata da 5 words, una word
     // per device, se il bit i di questa word è on, allora ho trovato il device-iesimo
@@ -127,23 +131,18 @@ static void handleDeviceInt(int device_type) {
 
     if (devreg_addr == NULL) return;  // This should never happen
 
-    int status_code = 0;
     if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
-        devreg *statusp = (devreg *) devreg_addr;
         devreg *commandp = (devreg *) (devreg_addr + 1);
-        status_code = *statusp;
         *commandp = ACK;
     } else if ((memaddr) devreg_addr >= TERMREG_START_ADDR && (memaddr) devreg_addr < TERMREG_END_ADDR) {
         // see pops 5.7 page 43, acknoledge both receiver and trasmitter if active
         termdev_t *receiver = (termdev_t *) devreg_addr;
         termdev_t *transmitter = (termdev_t *) (devreg_addr + sizeof(termdev_t) / sizeof(int));
         if ((receiver->status & DEVICESTATUSMASK) == RECEIVED) {
-            status_code = receiver->status;
             receiver->command = ACK;
         }
 
         if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
-            status_code = transmitter->status;  // NOTE: the status code is overwritten (but should be the same)
             transmitter->command = ACK;
         }
     }
@@ -151,17 +150,7 @@ static void handleDeviceInt(int device_type) {
     // TODO: use g_device semaphore resolver
     int *semaddr = &g_device_semaphores[0];
     g_soft_block_count--;
-    pcb_t *unblocked = sysVerhogen(semaddr);
-    if (unblocked == NULL) {
-        return;  // This should never happen
-    }
-
-    debug_arr[0] = emptyProcQ(&g_ready_queue);
-    debug_arr[1] = headBlocked(semaddr) == NULL;
-
-    unblocked->p_s.reg_v0 = status_code;
-
-    LDST((int *) BIOS_DATA_PAGE_BASE);
+    sysVerhogen(semaddr);
 }
 
 static void handleSysTimer() {
@@ -174,37 +163,29 @@ static void handleSysTimer() {
     }
 
     g_pseudo_clock = 0;
-
-    LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
 static void handleLocalTimer() {
-    // Acknowledge the PLT interrupt by loading the timer with a new value. [Section 4.1.4-pops]
-    // • Copy the processor state at the time of the exception (located at the start
-    // of the BIOS Data Page [Section 3.2.2-pops]) into the Current Process’s pcb
-    // (p s).
-    // • Place the Current Process on the Ready Queue; transitioning the Current
-    // Process from the “running” state to the “ready” state.
-    // • Call the Scheduler
-
-    // TODO:
+    setTIMER(TIMESLICE);
+    memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
+    insertProcQ(&g_ready_queue, g_current_process);
+    g_current_process = NULL;
+    scheduler();
 }
 
 /**
- * @brief
+ * @brief La seguente è una proposta di risoluzione degli address dei device in indici:
+ */
 
-La seguente è una proposta di risoluzione degli address dei device in indici:
 
-int addressResolver(int memaddress) {
-    0x1000054 è il base del device normale
+int resolveDeviceAddress(memaddr memaddress) {
+    // 0x1000054 è il base del device normale
 
-    0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
-    invece che 1
+    // 0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
+    // invece che 1
 
-    if (memaddress < 0x10000054) return -1; // non c'è nessun device associato
-    else if (memaddress < 0x10000254) return (memaddress - 0x10000054) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
-    else if (memaddress < 0x10000254 + 0x80) return (memaddress - 0x10000254) / (DEVREGSIZE / 2) + 32;
+    if (memaddress < DEVREG_START_ADDR) return -1; // non c'è nessun device associato
+    else if (memaddress < DEVREG_END_ADDR) return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+    else if (memaddress < TERMREG_END_ADDR) return (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2) + 32; // 32 è il numero dei device non term
     else return -1; // nessun device oltre a quello
 }
-
- */

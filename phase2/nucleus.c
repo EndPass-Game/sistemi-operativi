@@ -23,6 +23,8 @@ struct list_head g_ready_queue;
 pcb_t *g_current_process;
 int g_device_semaphores[DEVICE_NUMBER];
 int g_pseudo_clock;
+int g_debug[20];
+
 
 extern void test();
 extern void uTLB_RefillHandler();
@@ -66,7 +68,7 @@ static void initGlobalVariable() {
     g_current_process = NULL;
 
     for (int i = 0; i < DEVICE_NUMBER; i++) {
-        g_device_semaphores[i] = 0;
+        g_device_semaphores[i] = 1;
     }
     g_pseudo_clock = 1;
 

@@ -66,12 +66,11 @@ void syscallHandler(state_t *old_state) {
             passUpOrDie(GENERALEXCEPT);
             break;
     }
+    // Nelle system call bloccanti questa parte di codice non viene mai eseguita.
 
     // see 7.2.3 pops for return register
     old_state->reg_v0 = result;
 
-    // prevent infinite loop, see 3.5.10 pandos.pdf
-    old_state->pc_epc += WORDLEN;
 
     LDST(old_state);
 }
@@ -101,7 +100,7 @@ void sysTerminateProcess(memaddr pid) {
 void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
         memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
-        g_current_process->p_s.pc_epc += WORDLEN;
+        g_debug[2] = g_current_process->p_s.pc_epc;
         insertBlocked(semaddr, g_current_process);
         g_current_process = NULL;
         scheduler();
@@ -110,15 +109,13 @@ void sysPasseren(int *semaddr) {
     }
 }
 
-pcb_t *sysVerhogen(int *semaddr) {
+void sysVerhogen(int *semaddr) {
     pcb_t *removed_pcb = removeBlocked(semaddr);
     if (removed_pcb != NULL) {
         insertProcQ(&g_ready_queue, removed_pcb);
     } else {
         *semaddr = *semaddr + 1;
     }
-
-    return removed_pcb;
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
@@ -128,29 +125,29 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
         num_registers = 4;
     } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
         num_registers = 2;
-    }  // else keep 0;
+    }  else return -1;
+    // TODO: gestisci IO su dispositivo non installato, dovrebbe ritornare -1, leggi pg29
 
     for (int i = 0; i < num_registers; i++) {
         cmdAddr[i] = cmdValues[i];
     }
 
-    if (num_registers > 0) {
-        int *semaddr = &g_device_semaphores[0];  // TODO: use addressresolver instead of 0
 
-        g_soft_block_count++;
-        SYSCALL(PASSEREN, (memaddr) semaddr, 0, 0);
-
-        // TODO: potremmo mettere come convezione che semaddr è sempre 0 per i device.
-        if (g_current_process != NULL) {  // stop the process
-            insertBlocked(semaddr, g_current_process);
-            g_current_process = NULL;
-            scheduler();
-        }
-    }
+    // int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
+    int dev_num = 0;
+    int *semaddr = &g_device_semaphores[dev_num];  // TODO: use addressresolver instead of 0
+    g_soft_block_count++;
+    memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
+    SYSCALL(PASSEREN, (memaddr) semaddr, 0, 0);  // this is always blocking
 
     for (int i = 0; i < num_registers; i++) {
         cmdValues[i] = cmdAddr[i];
     }
+
+    g_debug[0] = cmdValues[0];
+
+    g_current_process->p_s.reg_v0 = 0;  // set return value
+    LDST(&g_current_process->p_s);
 
     return 0;
 }
