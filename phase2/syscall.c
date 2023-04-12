@@ -128,7 +128,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
         num_registers = 4;
     } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
         num_registers = 2;
-    } // else keep 0;
+    }  // else keep 0;
 
     for (int i = 0; i < num_registers; i++) {
         cmdAddr[i] = cmdValues[i];
@@ -139,9 +139,9 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 
         g_soft_block_count++;
         SYSCALL(PASSEREN, (memaddr) semaddr, 0, 0);
-        
+
         // TODO: potremmo mettere come convezione che semaddr è sempre 0 per i device.
-        if (g_current_process != NULL) {  // stop the process 
+        if (g_current_process != NULL) {  // stop the process
             insertBlocked(semaddr, g_current_process);
             g_current_process = NULL;
             scheduler();

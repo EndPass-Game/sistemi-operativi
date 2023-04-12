@@ -6,16 +6,15 @@
 #include <umps3/umps/types.h>
 
 #include "nucleus.h"
-#include "syscall.h"  // syscallHandler
 #include "semaphore.h"  // removeBlocked1
-#include "utils.h"    // memcpy
+#include "syscall.h"    // syscallHandler
+#include "utils.h"      // memcpy
 
 // TODO: move this in appropriate section
 static void interruptHandler();
 static void handleDeviceInt(int int_line);
 static void handleLocalTimer();
 static void handleSysTimer();
-
 
 void exceptionHandler() {
     state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
@@ -66,7 +65,6 @@ void passUpOrDie(int passupType) {
 }
 
 static void interruptHandler(state_t *old_state) {
-
     int interrupt_mask = DISKINTERRUPT |
                          FLASHINTERRUPT |
                          PRINTINTERRUPT |
@@ -143,7 +141,7 @@ static void handleDeviceInt(int device_type) {
             status_code = receiver->status;
             receiver->command = ACK;
         }
-        
+
         if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
             status_code = transmitter->status;  // NOTE: the status code is overwritten (but should be the same)
             transmitter->command = ACK;
@@ -167,7 +165,7 @@ static void handleDeviceInt(int device_type) {
 }
 
 static void handleSysTimer() {
-    LDIT(PSECOND / 10);   
+    LDIT(PSECOND / 10);
 
     // Altra implementazione possibile è chiamare V finché ho processi bloccati.
     pcb_t *outBlocked = NULL;
@@ -192,9 +190,8 @@ static void handleLocalTimer() {
     // TODO:
 }
 
-
 /**
- * @brief 
+ * @brief
 
 La seguente è una proposta di risoluzione degli address dei device in indici:
 
@@ -203,7 +200,7 @@ int addressResolver(int memaddress) {
 
     0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
     invece che 1
-    
+
     if (memaddress < 0x10000054) return -1; // non c'è nessun device associato
     else if (memaddress < 0x10000254) return (memaddress - 0x10000054) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
     else if (memaddress < 0x10000254 + 0x80) return (memaddress - 0x10000254) / (DEVREGSIZE / 2) + 32;
