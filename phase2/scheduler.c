@@ -29,6 +29,8 @@ void scheduler() {
 
     g_current_process = removeProcQ(&g_ready_queue);
 
+    g_debug[1] = emptyProcQ(&g_ready_queue);
+    g_debug[0] = (int) g_current_process->p_s.pc_epc;
     setTIMER(TIMESLICE);
     LDST(&g_current_process->p_s);
     // TODO: capisci come deallocare e decrementare quando

@@ -126,4 +126,16 @@ int sysGetProcessID(int parent);
  */
 int sysGetChildren(int *children, int size);
 
+/**
+ * @brief issue the syscall to begin the input output
+ * blocks on the semaphore if it's not available
+ */
+void beginIO(int dev_num, pcb_t *cmdValues);
+
+/**
+ * @brief finalize the syscall to end the input output
+ * unblocks the semaphore
+ */
+void endIO(int dev_num);
+
 #endif /* _SYSCALL_H */
