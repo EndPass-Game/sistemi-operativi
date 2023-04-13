@@ -42,6 +42,7 @@ void handleDeviceInt(int device_type) {
         beginIO(dev_num, removed_pcb);  // passing the baton pattern
     } else {
         g_sysiostates[dev_num].sem_mut += 1;
+        sysVerhogen(&g_sysiostates[dev_num].sem_mut);
     }
 }
 
@@ -76,7 +77,6 @@ void endIO(int devnum) {
         cmdValues[i] = cmdAddr[i];
     }
     g_soft_block_count--;
-    sysVerhogen(&g_sysiostates[devnum].sem_mut);
 }
 
 static devreg *findDevRegAddr(int device_type) {
