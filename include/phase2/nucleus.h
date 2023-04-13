@@ -33,10 +33,8 @@ extern pcb_t *g_current_process;
 
 /**
  * @brief device semaphores
- *
- * TODO: how many device semaphores are there?
  */
-extern int g_device_semaphores[DEVICE_NUMBER];  // TODO: vedere quanti device semaphores ci sono
+extern sysiostate_t g_sysiostates[DEVICE_NUMBER];
 
 /**
  * @brief Pseudo clock semaphore for interval timer
@@ -54,7 +52,7 @@ extern unsigned int g_tod;
  * @brief alias for casting BIOS_DATA_PAGE_BASE
  *
  */
-extern state_t *g_old_state;
+extern state_t *const g_old_state;
 
 extern int g_debug[20];
 #endif  // _NUCLEUS_H_
