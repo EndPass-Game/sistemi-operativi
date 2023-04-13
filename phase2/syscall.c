@@ -91,13 +91,8 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
         pcb->namespaces[ns->n_type] = ns;
     }
 
-    g_debug[7] = (int) headProcQ(&g_ready_queue);
     insertProcQ(&g_ready_queue, pcb);
     insertChild(g_current_process, pcb);
-
-    g_debug[4] = (int) pcb;
-    g_debug[5] = (int) g_current_process;
-    g_debug[6] = (int) headProcQ(&g_ready_queue);
     // p_time and p_semadd are null/0 initialized by allocPcb.
     return (memaddr) pcb;
 }
@@ -105,15 +100,13 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
 void sysTerminateProcess(memaddr pid) {
     pcb_t *current = (pcb_t *) pid;
     terminateProcess(current);
+    scheduler();
 }
 
-int what[2];
 void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
         memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
         updateProcessTime();
-        what[0] = (int) headProcQ(&g_ready_queue);
-        what[1] = (int) g_current_process;
         insertBlocked(semaddr, g_current_process);
         g_current_process = NULL;
         scheduler();
@@ -181,7 +174,8 @@ void beginIO(int devnum, pcb_t *process) {
     g_soft_block_count++;
     updateProcessTime();
 
-    sysPasseren(&g_sysiostates[devnum].sem_sync);
+        
+    //sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 
 int sysGetTime(void) {

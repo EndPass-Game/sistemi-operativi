@@ -272,9 +272,6 @@ void test() {
     SYSCALL(VERHOGEN, (int) &sem_startp2, 0, 0); /* V(sem_startp2)   */
 
     g_debug[0] = (int) headProcQ(&g_ready_queue);
-    g_debug[1] = emptyProcQ(&g_ready_queue);
-    g_debug[2] = (int) g_current_process;
-    g_debug[3] = p2pid;
     SYSCALL(PASSEREN, (int) &sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
 
     /* make sure we really blocked */
@@ -391,6 +388,7 @@ void p2() {
 
     p1p2synch = 1; /* p1 will check this */
 
+    g_debug[0] =0;
     SYSCALL(VERHOGEN, (int) &sem_endp2, 0, 0); /* P(sem_endp2)    unblocking P ! */
 
     SYSCALL(TERMPROCESS, 0, 0, 0); /* terminate p2 */
