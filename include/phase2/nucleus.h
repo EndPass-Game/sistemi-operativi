@@ -54,7 +54,7 @@ extern unsigned int g_tod;
  * @brief alias for casting BIOS_DATA_PAGE_BASE
  *
  */
-extern state_t *g_old_state;
+extern state_t *const g_old_state;
 
 extern int g_debug[20];
 #endif  // _NUCLEUS_H_

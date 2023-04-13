@@ -147,8 +147,6 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
         cmdValues[i] = cmdAddr[i];
     }
 
-    g_debug[0] = cmdValues[0];
-
     g_old_state->reg_v0 = 0;  // set return value
     LDST(g_old_state);
 

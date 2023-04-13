@@ -26,7 +26,7 @@ int g_device_semaphores[DEVICE_NUMBER];
 int g_pseudo_clock;
 int g_debug[20];
 unsigned int g_tod;
-state_t *g_old_state = (state_t *) BIOS_DATA_PAGE_BASE;
+state_t *const g_old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
 extern void test();
 extern void uTLB_RefillHandler();
@@ -70,7 +70,7 @@ static void initGlobalVariable() {
     g_current_process = NULL;
 
     for (int i = 0; i < DEVICE_NUMBER; i++) {
-        g_device_semaphores[i] = 1;
+        g_device_semaphores[i] = 0;
     }
     g_pseudo_clock = 1;
     g_tod = 0;
