@@ -142,14 +142,15 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     g_soft_block_count++;
     updateProcessTime();
     sysPasseren(semaddr);
+
     for (int i = 0; i < num_registers; i++) {
         cmdValues[i] = cmdAddr[i];
     }
 
     g_debug[0] = cmdValues[0];
 
-    g_current_process->p_s.reg_v0 = 0;  // set return value
-    LDST(&g_current_process->p_s);
+    g_old_state->reg_v0 = 0;  // set return value
+    LDST(g_old_state);
 
     return 0;
 }
