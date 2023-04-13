@@ -10,25 +10,20 @@
 #include "semaphore.h"  // removeBlocked1
 #include "syscall.h"    // syscallHandler
 #include "utils.h"      // memcpy
+#include "devices.h"    // interruptHandler
 
-// TODO: move this in appropriate section
 static void interruptHandler();
-static void handleDeviceInt(int int_line);
 static void handleLocalTimer();
 static void handleSysTimer();
 
 void exceptionHandler() {
     // see 3.4 of pandos.pdf, page 19 of pops
-    //
-    // TODO: forse dovremmo mettere un interrupt block
-    //
     unsigned int cause_bits = CAUSE_GET_EXCCODE(g_old_state->cause);
 
     switch (cause_bits) {
         case EXC_INT:
             updateProcessTime();  // don't charge interrupt to the current process!
             interruptHandler();
-            // todo:
             break;
         case EXC_MOD:
         case EXC_TLBL:
@@ -45,7 +40,6 @@ void exceptionHandler() {
         case EXC_OV:
             passUpOrDie(GENERALEXCEPT);
             break;
-
         case EXC_SYS:
             // prevent infinite loop, see 3.5.10 pandos.pdf
             g_old_state->pc_epc += WORDLEN;
@@ -53,7 +47,6 @@ void exceptionHandler() {
             break;
         default:
             passUpOrDie(GENERALEXCEPT);
-            // TODO: invent a default behaviour, could also be nothing
             break;
     }
 
@@ -77,19 +70,6 @@ static void interruptHandler() {
                          TERMINTERRUPT |
                          LOCALTIMERINT |
                          TIMERINTERRUPT;
-
-    // TODO: gestire casi in cui ho più interrupt sullo stesso filo
-    // non sono sicuro se sia corretto il settaggio di ~intbit
-
-    // TODO: gestire le interrupt mask singole per ogni linea
-
-    // TODO: these aliases could be useful
-    // #define LOCALTIMERN 1
-    // #define TIMERN 2
-    // #define DISKN 3
-    // #define FLASHN 4
-    // #define PRINTN 5
-    // #define TERMN 6
 
     // NOTA: non cambiare l'ordine, è importante per la precedenza
     if (g_old_state->cause & LOCALTIMERINT) {
@@ -120,53 +100,6 @@ static void interruptHandler() {
     LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
-static void handleDeviceInt(int device_type) {
-    // Sto andando a guardare una zona di memoria che è formata da 5 words, una word
-    // per device, se il bit i di questa word è on, allora ho trovato il device-iesimo
-    // che ha creato l'interrupt.
-    int *int_dev_bitmap = (int *) INTDEV_BITMAP;
-    int *devreg_addr = NULL;
-    for (int i = 0; i < 8; i++) {
-        if (int_dev_bitmap[device_type - 3] & (1 << i)) {
-            devreg_addr = (int *) DEVADDR(device_type, i);
-            break;
-        }
-    }
-
-    if (devreg_addr == NULL) return;  // This should never happen
-
-    // TODO: use g_device semaphore resolver
-    int dev_num = 0;
-
-    endIO(dev_num);
-    if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
-        devreg *commandp = (devreg *) (devreg_addr + 1);
-        *commandp = ACK;
-    } else if ((memaddr) devreg_addr >= TERMREG_START_ADDR && (memaddr) devreg_addr < TERMREG_END_ADDR) {
-        // see pops 5.7 page 43, acknoledge both receiver and trasmitter if active
-        termdev_t *receiver = (termdev_t *) devreg_addr;
-        termdev_t *transmitter = (termdev_t *) (devreg_addr + sizeof(termdev_t) / sizeof(int));
-        if ((receiver->status & DEVICESTATUSMASK) == RECEIVED) {
-            receiver->command = ACK;
-        }
-
-        if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
-            transmitter->command = ACK;
-        }
-    }
-
-    g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
-    sysVerhogen(&g_sysiostates[dev_num].sem_sync);
-    pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
-    if (removed_pcb != NULL) {
-        beginIO(dev_num, removed_pcb);  // passing the baton pattern
-    } else {
-        g_sysiostates[dev_num].sem_mut += 1;
-    }
-
-    scheduler();
-}
-
 static void handleSysTimer() {
     LDIT(PSECOND / 10);
 
@@ -187,27 +120,9 @@ static void handleLocalTimer() {
     scheduler();
 }
 
-// TODO: the functions down there are utilities, should be moved
-
 /**
  * @brief La seguente è una proposta di risoluzione degli address dei device in indici:
  */
-int resolveDeviceAddress(memaddr memaddress) {
-    // 0x1000054 è il base del device normale
-
-    // 0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
-    // invece che 1
-
-    if (memaddress < DEVREG_START_ADDR)
-        return -1;  // non c'è nessun device associato
-    else if (memaddress < DEVREG_END_ADDR)
-        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
-    else if (memaddress < TERMREG_END_ADDR)
-        return (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2) + 32;  // 32 è il numero dei device non term
-    else
-        return -1;  // nessun device oltre a quello
-}
-
 unsigned int getPassedTime() {
     unsigned int tod;
     STCK(tod);

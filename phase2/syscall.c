@@ -12,10 +12,7 @@
 #include "scheduler.h"
 #include "semaphore.h"
 #include "utils.h"
-
-// static void beginIO(int devnum, pcb_t *process);
-// static void endIO(int devnum);
-static int getNumRegister(int *cmdAddr);
+#include "devices.h"
 
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
@@ -135,40 +132,6 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     beginIO(dev_num, g_current_process);
     endIO(dev_num);
     return 0;
-}
-
-static int getNumRegister(int *cmdAddr) {
-    if ((memaddr) cmdAddr >= DEVREG_START_ADDR && (memaddr) cmdAddr < DEVREG_END_ADDR) {
-        return 4;
-    } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
-        return 2;
-    } else
-        return -1;
-    // TODO: gestisci IO su dispositivo non installato, dovrebbe ritornare -1, leggi pg29
-}
-
-void endIO(int devnum) {
-    pcb_t *process = g_sysiostates[devnum].waiting_process;
-    int *cmdAddr = process->cmd_addr;
-    int *cmdValues = process->cmd_values;
-
-    for (int i = 0; i < getNumRegister(cmdAddr); i++) {
-        cmdValues[i] = cmdAddr[i];
-    }
-    g_soft_block_count--;
-    sysVerhogen(&g_sysiostates[devnum].sem_mut);
-}
-
-void beginIO(int devnum, pcb_t *process) {
-    g_sysiostates[devnum].waiting_process = process;
-    int *cmdAddr = process->cmd_addr;
-    int *cmdValues = process->cmd_values;
-
-    for (int i = 0; i < getNumRegister(cmdAddr); i++) {
-        cmdAddr[i] = cmdValues[i];
-    }
-    g_soft_block_count++;
-    sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 
 int sysGetTime(void) {
