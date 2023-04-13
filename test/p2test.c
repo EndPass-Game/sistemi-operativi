@@ -21,6 +21,8 @@
 #include <pandos_types.h>
 #include <umps3/umps/libumps.h>
 
+#include "nucleus.h"
+
 typedef unsigned int devregtr;
 
 /* hardware constants */
@@ -68,7 +70,7 @@ int sem_term_mut = 1,              /* for mutual exclusion on terminal */
     s[MAXSEM + 1],                 /* semaphore array */
     sem_testsem = 0,               /* for a simple test */
     sem_startp2 = 0,               /* used to start p2 */
-    sem_endp2 = 1,                 /* used to signal p2's demise (test binary blocking V on binary sem*/
+    sem_endp2 = 0,                 /* used to signal p2's demise (test binary blocking V on binary sem*/
     sem_endp3 = 0,                 /* used to signal p3's demise */
     sem_blkp4 = 1,                 /* used to block second incaration of p4 */
     sem_synp4 = 0,                 /* used to allow p4 incarnations to synhronize */
@@ -260,10 +262,19 @@ void test() {
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int) &p2state, (int) NULL, (int) NULL); /* start p2     */
 
+    if ((int) g_current_process == p2pid) {
+        print("what does the fox say?\n");
+    }
+
     print("p2 was started\n");
+
 
     SYSCALL(VERHOGEN, (int) &sem_startp2, 0, 0); /* V(sem_startp2)   */
 
+    g_debug[0] = (int) headProcQ(&g_ready_queue);
+    g_debug[1] = emptyProcQ(&g_ready_queue);
+    g_debug[2] = (int) g_current_process;
+    g_debug[3] = p2pid;
     SYSCALL(PASSEREN, (int) &sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
 
     /* make sure we really blocked */
