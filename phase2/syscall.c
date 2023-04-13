@@ -123,6 +123,7 @@ void sysVerhogen(int *semaddr) {
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
+    // sem mut
     int num_registers = 0;
 
     if ((memaddr) cmdAddr >= DEVREG_START_ADDR && (memaddr) cmdAddr < DEVREG_END_ADDR) {
