@@ -138,7 +138,7 @@ static void handleDeviceInt(int device_type) {
     // TODO: use g_device semaphore resolver
     int dev_num = 0;
 
-    //sysVerhogen(&g_sysiostates[dev_num].sem_sync);
+    // sysVerhogen(&g_sysiostates[dev_num].sem_sync);
 
     state_t *state = &g_sysiostates[dev_num].waiting_process->p_s;
     g_current_process = g_sysiostates[dev_num].waiting_process;

@@ -174,8 +174,7 @@ void beginIO(int devnum, pcb_t *process) {
     g_soft_block_count++;
     updateProcessTime();
 
-        
-    //sysPasseren(&g_sysiostates[devnum].sem_sync);
+    // sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 
 int sysGetTime(void) {
