@@ -19,6 +19,9 @@ static void handleSysTimer();
 
 void exceptionHandler() {
     // see 3.4 of pandos.pdf, page 19 of pops
+    //
+    // TODO: forse dovremmo mettere un interrupt block
+    //
     unsigned int cause_bits = CAUSE_GET_EXCCODE(g_old_state->cause);
 
     switch (cause_bits) {
@@ -177,7 +180,6 @@ static void handleSysTimer() {
     }
 
     g_pseudo_clock = 0;
-    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
 }
 
 static void handleLocalTimer() {

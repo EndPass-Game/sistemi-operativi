@@ -134,6 +134,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     g_current_process->cmd_values = cmdValues;
 
     sysPasseren(&g_sysiostates[dev_num].sem_mut);
+    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
     beginIO(dev_num, g_current_process);
 
     // questa non dovrebbe mai essere eseguita, si potrebbe mettere un PANIC();
