@@ -262,12 +262,19 @@ void test() {
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int) &p2state, (int) NULL, (int) NULL); /* start p2     */
 
+    if ((int) g_current_process == p2pid) {
+        print("what does the fox say?\n");
+    }
+
     print("p2 was started\n");
 
-    g_debug[1] = 0xFFFFFFFF;
 
     SYSCALL(VERHOGEN, (int) &sem_startp2, 0, 0); /* V(sem_startp2)   */
 
+    g_debug[0] = (int) headProcQ(&g_ready_queue);
+    g_debug[1] = emptyProcQ(&g_ready_queue);
+    g_debug[2] = (int) g_current_process;
+    g_debug[3] = p2pid;
     SYSCALL(PASSEREN, (int) &sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
 
     /* make sure we really blocked */

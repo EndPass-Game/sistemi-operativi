@@ -6,11 +6,13 @@
 #include "nucleus.h"
 #include "process.h"
 
+int what2 = 0xFF;
 void scheduler() {
     // Disabilitiamo gli interrupt perché altrimenti potrei avere
     // un interrupt subito dopo il check ad g_soft_block_count > 0
     // e l'interrupt mi setta dopo questo check che il soft block count è 0
     unsigned int old_status = getSTATUS();
+    what2 = emptyProcQ(&g_ready_queue);
     while (emptyProcQ(&g_ready_queue)) {
         setSTATUS(old_status & ~STATUS_IEc);
         if (g_process_count == 0) {
@@ -29,8 +31,6 @@ void scheduler() {
 
     g_current_process = removeProcQ(&g_ready_queue);
 
-    g_debug[1] = emptyProcQ(&g_ready_queue);
-    g_debug[0] = (int) g_current_process->p_s.pc_epc;
     setTIMER(TIMESLICE);
     LDST(&g_current_process->p_s);
     // TODO: capisci come deallocare e decrementare quando
