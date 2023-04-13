@@ -138,35 +138,33 @@ static void handleDeviceInt(int device_type) {
     // TODO: use g_device semaphore resolver
     int dev_num = 0;
 
-    // sysVerhogen(&g_sysiostates[dev_num].sem_sync);
-
-    state_t *state = &g_sysiostates[dev_num].waiting_process->p_s;
-    g_current_process = g_sysiostates[dev_num].waiting_process;
     endIO(dev_num);
+    if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
+        devreg *commandp = (devreg *) (devreg_addr + 1);
+        *commandp = ACK;
+    } else if ((memaddr) devreg_addr >= TERMREG_START_ADDR && (memaddr) devreg_addr < TERMREG_END_ADDR) {
+        // see pops 5.7 page 43, acknoledge both receiver and trasmitter if active
+        termdev_t *receiver = (termdev_t *) devreg_addr;
+        termdev_t *transmitter = (termdev_t *) (devreg_addr + sizeof(termdev_t) / sizeof(int));
+        if ((receiver->status & DEVICESTATUSMASK) == RECEIVED) {
+            receiver->command = ACK;
+        }
 
-    pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
-    if (removed_pcb != NULL) {
-        beginIO(dev_num, removed_pcb);
-    } else {
-        g_sysiostates[dev_num].sem_mut += 1;
-        if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
-            devreg *commandp = (devreg *) (devreg_addr + 1);
-            *commandp = ACK;
-        } else if ((memaddr) devreg_addr >= TERMREG_START_ADDR && (memaddr) devreg_addr < TERMREG_END_ADDR) {
-            // see pops 5.7 page 43, acknoledge both receiver and trasmitter if active
-            termdev_t *receiver = (termdev_t *) devreg_addr;
-            termdev_t *transmitter = (termdev_t *) (devreg_addr + sizeof(termdev_t) / sizeof(int));
-            if ((receiver->status & DEVICESTATUSMASK) == RECEIVED) {
-                receiver->command = ACK;
-            }
-
-            if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
-                transmitter->command = ACK;
-            }
+        if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
+            transmitter->command = ACK;
         }
     }
-    state->reg_v0 = 0;  // set return value
-    LDST(state);
+
+    g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
+    sysVerhogen(&g_sysiostates[dev_num].sem_sync);
+    pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
+    if (removed_pcb != NULL) {
+        beginIO(dev_num, removed_pcb);  // passing the baton pattern
+    } else {
+        g_sysiostates[dev_num].sem_mut += 1;
+    }
+
+    scheduler();
 }
 
 static void handleSysTimer() {

@@ -132,10 +132,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     g_current_process->cmd_values = cmdValues;
 
     sysPasseren(&g_sysiostates[dev_num].sem_mut);
-    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
     beginIO(dev_num, g_current_process);
-
-    // questa non dovrebbe mai essere eseguita, si potrebbe mettere un PANIC();
     endIO(dev_num);
     return 0;
 }
@@ -170,11 +167,8 @@ void beginIO(int devnum, pcb_t *process) {
     for (int i = 0; i < getNumRegister(cmdAddr); i++) {
         cmdAddr[i] = cmdValues[i];
     }
-    // int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
     g_soft_block_count++;
-    updateProcessTime();
-
-    // sysPasseren(&g_sysiostates[devnum].sem_sync);
+    sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 
 int sysGetTime(void) {
