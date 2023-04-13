@@ -24,6 +24,7 @@ pcb_t *g_current_process;
 int g_device_semaphores[DEVICE_NUMBER];
 int g_pseudo_clock;
 int g_debug[20];
+unsigned int g_tod;
 
 extern void test();
 extern void uTLB_RefillHandler();
@@ -70,6 +71,7 @@ static void initGlobalVariable() {
         g_device_semaphores[i] = 1;
     }
     g_pseudo_clock = 1;
+    g_tod = 0;
 
     passupvector_t *passupvector = (passupvector_t *) PASSUPVECTOR;
     passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler;

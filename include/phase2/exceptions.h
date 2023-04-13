@@ -22,4 +22,9 @@ void passUpOrDie(int passupType);
  */
 int resolveDeviceAddress(memaddr memory_address);
 
+unsigned int getPassedTime();
+
+// updates last value of the time of day
+void updateProcessTime();
+
 #endif /* _EXCEPTIONS_H */

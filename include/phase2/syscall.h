@@ -10,9 +10,7 @@ void syscallHandler(state_t *old_state);
 /**
  * @brief Questa system call crea un nuovo processo
  * come figlio del chiamante. Il primo parametro
- * contiene lo stato che deve avere il processo. Se la
- * system call ha successo il valore di ritorno è zero
- * altrimenti è -1.
+ * contiene lo stato che deve avere il processo.
  *
  * @param supportp è un puntatore alla struttura di
  * supporto del processo
@@ -29,7 +27,7 @@ void syscallHandler(state_t *old_state);
  * progressivo non nullo (diverso da 0, basta che sia unico)
  * oppure l’indirizzo * della struttura pcb_t corrispondente.
  *
- * restituisce il pid del processo creato
+ * @return il pid del processo creato
  */
 memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns);
 

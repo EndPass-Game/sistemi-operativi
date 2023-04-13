@@ -43,5 +43,12 @@ extern int g_device_semaphores[DEVICE_NUMBER];  // TODO: vedere quanti device se
  */
 extern int g_pseudo_clock;
 
+/**
+ * @brief global that stores the global pseudo clock at the start
+ * of a process.
+ * 
+ */
+extern unsigned int g_tod;
+
 extern int g_debug[20];
 #endif  // _NUCLEUS_H_

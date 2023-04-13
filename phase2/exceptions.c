@@ -25,7 +25,9 @@ void exceptionHandler() {
 
     switch (cause_bits) {
         case EXC_INT:
+            updateProcessTime();  // don't charge interrupt to the current process!
             interruptHandler(old_state);
+            // todo:
             break;
         case EXC_MOD:
         case EXC_TLBL:
@@ -113,6 +115,7 @@ static void interruptHandler(state_t *old_state) {
         interruptHandler(old_state);
     }
 
+    STCK(g_tod);
     LDST((int *) BIOS_DATA_PAGE_BASE);
 }
 
@@ -173,6 +176,8 @@ static void handleLocalTimer() {
     scheduler();
 }
 
+// TODO: the functions down there are utilities, should be moved
+
 /**
  * @brief La seguente è una proposta di risoluzione degli address dei device in indici:
  */
@@ -190,4 +195,17 @@ int resolveDeviceAddress(memaddr memaddress) {
         return (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2) + 32;  // 32 è il numero dei device non term
     else
         return -1;  // nessun device oltre a quello
+}
+
+unsigned int getPassedTime() {
+    unsigned int tod;
+    STCK(tod);
+    return tod - g_tod;
+}
+
+void updateProcessTime() {
+    if (g_current_process != NULL) {
+        g_current_process->p_time += getPassedTime();
+    }
+    STCK(g_tod);
 }

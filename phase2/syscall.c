@@ -82,7 +82,10 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
     g_process_count++;
     memcpy((void *) &pcb->p_s, (void *) statep, sizeof(state_t));
     pcb->p_supportStruct = supportp;  // if supportp is null, it's ok
-    pcb->namespaces[ns->n_type] = ns;
+
+    if (ns != NULL) {
+        pcb->namespaces[ns->n_type] = ns;
+    }
 
     insertProcQ(&g_ready_queue, pcb);
     insertChild(g_current_process, pcb);
@@ -100,6 +103,8 @@ void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
         memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
         g_debug[2] = g_current_process->p_s.pc_epc;
+
+        updateProcessTime();
         insertBlocked(semaddr, g_current_process);
         g_current_process = NULL;
         scheduler();
@@ -131,12 +136,12 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     for (int i = 0; i < num_registers; i++) {
         cmdAddr[i] = cmdValues[i];
     }
-
     // int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
     int dev_num = 0;
     int *semaddr = &g_device_semaphores[dev_num];  // TODO: use addressresolver instead of 0
     g_soft_block_count++;
     memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
+    updateProcessTime();
     SYSCALL(PASSEREN, (memaddr) semaddr, 0, 0);  // this is always blocking
 
     for (int i = 0; i < num_registers; i++) {
@@ -154,13 +159,15 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 int sysGetTime(void) {
     // TODO: verificare se il p_time è gestito dallo status (cosa che non dovrebbe essere)
     // 3.8 pandos dovrebbe avere la risposta su come fare.
-    return g_current_process->p_time;
+    return g_current_process->p_time + getPassedTime();
 }
 
 void sysClockWait(void) {
     // TODO: the other part is handled in the interrupt
     //  the interrupt need to mange this semaphore lika a binary sempahore
     //  **not an ordinary semaphore**
+
+    updateProcessTime();
     sysPasseren(&g_pseudo_clock);
 }
 
