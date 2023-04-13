@@ -139,9 +139,9 @@ static void handleDeviceInt(int device_type) {
     int dev_num = 0;
 
     sysVerhogen(&g_sysiostates[dev_num].sem_sync);
-    
+
     state_t *state = &g_sysiostates[dev_num].waiting_process->p_s;
-    g_current_process= g_sysiostates[dev_num].waiting_process;
+    g_current_process = g_sysiostates[dev_num].waiting_process;
     endIO(dev_num);
 
     pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
