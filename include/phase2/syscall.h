@@ -5,7 +5,7 @@
 
 #include "def-syscall.h"
 
-void syscallHandler(state_t *old_state);
+void syscallHandler();
 
 /**
  * @brief Questa system call crea un nuovo processo

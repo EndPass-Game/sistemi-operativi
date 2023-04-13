@@ -18,15 +18,13 @@ static void handleLocalTimer();
 static void handleSysTimer();
 
 void exceptionHandler() {
-    state_t *old_state = (state_t *) BIOS_DATA_PAGE_BASE;
-
     // see 3.4 of pandos.pdf, page 19 of pops
-    unsigned int cause_bits = CAUSE_GET_EXCCODE(old_state->cause);
+    unsigned int cause_bits = CAUSE_GET_EXCCODE(g_old_state->cause);
 
     switch (cause_bits) {
         case EXC_INT:
             updateProcessTime();  // don't charge interrupt to the current process!
-            interruptHandler(old_state);
+            interruptHandler();
             // todo:
             break;
         case EXC_MOD:
@@ -47,8 +45,8 @@ void exceptionHandler() {
 
         case EXC_SYS:
             // prevent infinite loop, see 3.5.10 pandos.pdf
-            old_state->pc_epc += WORDLEN;
-            syscallHandler(old_state);
+            g_old_state->pc_epc += WORDLEN;
+            syscallHandler();
             break;
         default:
             passUpOrDie(GENERALEXCEPT);
@@ -69,7 +67,7 @@ void passUpOrDie(int passupType) {
     }
 }
 
-static void interruptHandler(state_t *old_state) {
+static void interruptHandler() {
     int interrupt_mask = DISKINTERRUPT |
                          FLASHINTERRUPT |
                          PRINTINTERRUPT |
@@ -91,28 +89,28 @@ static void interruptHandler(state_t *old_state) {
     // #define TERMN 6
 
     // NOTA: non cambiare l'ordine, è importante per la precedenza
-    if (old_state->cause & LOCALTIMERINT) {
-        old_state->cause &= ~LOCALTIMERINT;
+    if (g_old_state->cause & LOCALTIMERINT) {
+        g_old_state->cause &= ~LOCALTIMERINT;
         handleLocalTimer();
-    } else if (old_state->cause & TIMERINTERRUPT) {
-        old_state->cause &= ~TIMERINTERRUPT;
+    } else if (g_old_state->cause & TIMERINTERRUPT) {
+        g_old_state->cause &= ~TIMERINTERRUPT;
         handleSysTimer();
-    } else if (old_state->cause & DISKINTERRUPT) {
-        old_state->cause &= ~DISKINTERRUPT;
+    } else if (g_old_state->cause & DISKINTERRUPT) {
+        g_old_state->cause &= ~DISKINTERRUPT;
         handleDeviceInt(DISK_INTLINE);
-    } else if (old_state->cause & FLASHINTERRUPT) {
-        old_state->cause &= ~FLASHINTERRUPT;
+    } else if (g_old_state->cause & FLASHINTERRUPT) {
+        g_old_state->cause &= ~FLASHINTERRUPT;
         handleDeviceInt(FLASH_INTLINE);
-    } else if (old_state->cause & PRINTINTERRUPT) {
-        old_state->cause &= ~PRINTINTERRUPT;
+    } else if (g_old_state->cause & PRINTINTERRUPT) {
+        g_old_state->cause &= ~PRINTINTERRUPT;
         handleDeviceInt(PRINTER_INTLINE);
-    } else if (old_state->cause & TERMINTERRUPT) {
-        old_state->cause &= ~TERMINTERRUPT;
+    } else if (g_old_state->cause & TERMINTERRUPT) {
+        g_old_state->cause &= ~TERMINTERRUPT;
         handleDeviceInt(TERM_INTLINE);
     }
 
-    if (old_state->cause & interrupt_mask) {
-        interruptHandler(old_state);
+    if (g_old_state->cause & interrupt_mask) {
+        interruptHandler();
     }
 
     STCK(g_tod);
@@ -170,7 +168,7 @@ static void handleSysTimer() {
 
 static void handleLocalTimer() {
     setTIMER(TIMESLICE);
-    memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
+    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
     insertProcQ(&g_ready_queue, g_current_process);
     g_current_process = NULL;
     scheduler();

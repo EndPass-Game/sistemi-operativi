@@ -13,17 +13,17 @@
 #include "semaphore.h"
 #include "utils.h"
 
-void syscallHandler(state_t *old_state) {
-    if (old_state->status & STATUS_KUc) {
+void syscallHandler() {
+    if (g_old_state->status & STATUS_KUc) {
         // TODO: simulate program trap, syscall without privilege
         // should this be handled here or other place?
     }
 
     // see 3.5 of pandos.pdf2
-    unsigned int syscall_code = old_state->reg_a0;
-    unsigned int a1 = old_state->reg_a1;
-    unsigned int a2 = old_state->reg_a2;
-    unsigned int a3 = old_state->reg_a3;
+    unsigned int syscall_code = g_old_state->reg_a0;
+    unsigned int a1 = g_old_state->reg_a1;
+    unsigned int a2 = g_old_state->reg_a2;
+    unsigned int a3 = g_old_state->reg_a3;
 
     // TODO: decidere se per le syscall è meglio passare funzioni
     // (metodo più clean, ma più lento)
@@ -69,9 +69,9 @@ void syscallHandler(state_t *old_state) {
     // Nelle system call bloccanti questa parte di codice non viene mai eseguita.
 
     // see 7.2.3 pops for return register
-    old_state->reg_v0 = result;
+    g_old_state->reg_v0 = result;
 
-    LDST(old_state);
+    LDST(g_old_state);
 }
 
 memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
@@ -101,7 +101,7 @@ void sysTerminateProcess(memaddr pid) {
 
 void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
-        memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
+        memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
         g_debug[2] = g_current_process->p_s.pc_epc;
 
         updateProcessTime();
@@ -140,10 +140,8 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     int dev_num = 0;
     int *semaddr = &g_device_semaphores[dev_num];  // TODO: use addressresolver instead of 0
     g_soft_block_count++;
-    memcpy((void *) &g_current_process->p_s, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
     updateProcessTime();
-    SYSCALL(PASSEREN, (memaddr) semaddr, 0, 0);  // this is always blocking
-
+    sysPasseren(semaddr);
     for (int i = 0; i < num_registers; i++) {
         cmdValues[i] = cmdAddr[i];
     }

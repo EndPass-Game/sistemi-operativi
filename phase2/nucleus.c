@@ -11,6 +11,7 @@
 #include "process.h"
 #include "scheduler.h"
 #include "semaphore.h"
+#include "umps/bios_defs.h"
 
 /**
  *  @brief  We define the global variables here,
@@ -25,6 +26,7 @@ int g_device_semaphores[DEVICE_NUMBER];
 int g_pseudo_clock;
 int g_debug[20];
 unsigned int g_tod;
+state_t *g_old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
 extern void test();
 extern void uTLB_RefillHandler();

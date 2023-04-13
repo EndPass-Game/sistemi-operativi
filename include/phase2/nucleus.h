@@ -50,5 +50,11 @@ extern int g_pseudo_clock;
  */
 extern unsigned int g_tod;
 
+/**
+ * @brief alias for casting BIOS_DATA_PAGE_BASE
+ *
+ */
+extern state_t *g_old_state;
+
 extern int g_debug[20];
 #endif  // _NUCLEUS_H_
