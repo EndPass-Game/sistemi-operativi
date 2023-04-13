@@ -270,7 +270,7 @@ void test() {
 
     SYSCALL(VERHOGEN, (int)&sem_startp2, 0, 0); /* V(sem_startp2)   */
     
-    SYSCALL(VERHOGEN, (int)&sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
+    SYSCALL(PASSEREN, (int)&sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
     
     /* make sure we really blocked */
     if (p1p2synch == 0) {
@@ -387,7 +387,7 @@ void p2() {
 
     p1p2synch = 1; /* p1 will check this */
 
-    SYSCALL(PASSEREN, (int)&sem_endp2, 0, 0); /* P(sem_endp2)    unblocking P ! */
+    SYSCALL(VERHOGEN, (int)&sem_endp2, 0, 0); /* P(sem_endp2)    unblocking P ! */
 
     SYSCALL(TERMPROCESS, 0, 0, 0); /* terminate p2 */
 
