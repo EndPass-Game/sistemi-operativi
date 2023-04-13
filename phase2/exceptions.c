@@ -152,16 +152,19 @@ static void handleDeviceInt(int device_type) {
     int dev_num = 0;
 
     // questo semaforo è quasi inutile
-    sysVerhogen(g_sysiostates[dev_num].sem_sync);
-    endIO(g_sysiostates[dev_num].waiting_process);
+    sysVerhogen(&g_sysiostates[dev_num].sem_sync);
+    state_t *state = &g_sysiostates[dev_num].waiting_process->p_s;
+    endIO(dev_num);
     g_soft_block_count--;
 
-    pcb_t *removed_pcb = removeBlocked(g_sysiostates[dev_num].sem_mut);
+    pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
     if (removed_pcb != NULL) {
         beginIO(dev_num, removed_pcb);
     } else {
         g_sysiostates[dev_num].sem_mut += 1;
     }
+    state->reg_v0 = 0;  // set return value
+    LDST(state);
 }
 
 static void handleSysTimer() {
@@ -174,6 +177,7 @@ static void handleSysTimer() {
     }
 
     g_pseudo_clock = 0;
+    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
 }
 
 static void handleLocalTimer() {

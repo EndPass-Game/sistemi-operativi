@@ -13,8 +13,8 @@
 #include "semaphore.h"
 #include "utils.h"
 
-static void beginIO(int devnum, pcb_t *process);
-static void endIO(int devnum);
+// static void beginIO(int devnum, pcb_t *process);
+// static void endIO(int devnum);
 static int getNumRegister(int *cmdAddr);
 
 void syscallHandler() {
@@ -133,7 +133,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     g_current_process->cmd_addr = cmdAddr;
     g_current_process->cmd_values = cmdValues;
 
-    sysPasseren(g_sysiostates[dev_num].sem_mut);
+    sysPasseren(&g_sysiostates[dev_num].sem_mut);
     beginIO(dev_num, g_current_process);
 
     // questa non dovrebbe mai essere eseguita, si potrebbe mettere un PANIC();
@@ -151,7 +151,7 @@ static int getNumRegister(int *cmdAddr) {
     // TODO: gestisci IO su dispositivo non installato, dovrebbe ritornare -1, leggi pg29
 }
 
-static void endIO(int devnum) {
+void endIO(int devnum) {
     pcb_t *process = g_sysiostates[devnum].waiting_process;
     int *cmdAddr = process->cmd_addr;
     int *cmdValues = process->cmd_values;
@@ -160,13 +160,10 @@ static void endIO(int devnum) {
         cmdValues[i] = cmdAddr[i];
     }
 
-    sysVerhogen(g_sysiostates[devnum].sem_mut);
-
-    g_old_state->reg_v0 = 0;  // set return value
-    LDST(g_old_state);
+    sysVerhogen(&g_sysiostates[devnum].sem_mut);
 }
 
-static void beginIO(int devnum, pcb_t *process) {
+void beginIO(int devnum, pcb_t *process) {
     g_sysiostates[devnum].waiting_process = process;
     int *cmdAddr = process->cmd_addr;
     int *cmdValues = process->cmd_values;
@@ -178,7 +175,7 @@ static void beginIO(int devnum, pcb_t *process) {
     g_soft_block_count++;
     updateProcessTime();
 
-    sysPasseren(g_sysiostates[devnum].sem_sync);
+    sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 
 int sysGetTime(void) {

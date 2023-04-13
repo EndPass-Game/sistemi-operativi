@@ -34,6 +34,7 @@ extern void uTLB_RefillHandler();
 static void initGlobalVariable();
 
 static void launchInit();
+static void initSysIOState(int dev_num);
 
 int main() {
     initGlobalVariable();
