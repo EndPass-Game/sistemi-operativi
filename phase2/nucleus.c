@@ -86,7 +86,7 @@ static void initGlobalVariable() {
 static void initSysIOState(int dev_num) {
     g_sysiostates[dev_num].sem_mut = 1;
     g_sysiostates[dev_num].sem_sync = 0;
-    g_sysiostates[dev_num].waiting_process =NULL;
-    //g_sysiostates[dev_num].cmd_addr = NULL;
-    //g_sysiostates[dev_num].cmd_values = NULL;
+    g_sysiostates[dev_num].waiting_process = NULL;
+    // g_sysiostates[dev_num].cmd_addr = NULL;
+    // g_sysiostates[dev_num].cmd_values = NULL;
 }

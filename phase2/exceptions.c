@@ -149,19 +149,18 @@ static void handleDeviceInt(int device_type) {
     }
 
     // TODO: use g_device semaphore resolver
-    int dev_num= 0 ;
+    int dev_num = 0;
 
-    //questo semaforo è quasi inutile
+    // questo semaforo è quasi inutile
     sysVerhogen(g_sysiostates[dev_num].sem_sync);
-    endIO(g_sysiostates[dev_num].waiting_process) ;
+    endIO(g_sysiostates[dev_num].waiting_process);
     g_soft_block_count--;
-    
 
     pcb_t *removed_pcb = removeBlocked(g_sysiostates[dev_num].sem_mut);
     if (removed_pcb != NULL) {
-        beginIO(dev_num,removed_pcb); 
+        beginIO(dev_num, removed_pcb);
     } else {
-        g_sysiostates[dev_num].sem_mut +=1;
+        g_sysiostates[dev_num].sem_mut += 1;
     }
 }
 

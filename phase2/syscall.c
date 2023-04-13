@@ -13,9 +13,9 @@
 #include "semaphore.h"
 #include "utils.h"
 
-static void beginIO(int devnum,pcb_t* process);
+static void beginIO(int devnum, pcb_t *process);
 static void endIO(int devnum);
-static int getNumRegister(int * cmdAddr);
+static int getNumRegister(int *cmdAddr);
 
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
@@ -130,20 +130,18 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     int dev_num = 0;
 
     // TODO: mettere su epc, t9, e stack per il nuovo frame, dovrebbero bastare queste due
-    g_current_process->cmd_addr=cmdAddr;
-    g_current_process->cmd_values=cmdValues;
-    
-    sysPasseren(g_sysiostates[dev_num].sem_mut);
-    beginIO(dev_num,g_current_process);
+    g_current_process->cmd_addr = cmdAddr;
+    g_current_process->cmd_values = cmdValues;
 
+    sysPasseren(g_sysiostates[dev_num].sem_mut);
+    beginIO(dev_num, g_current_process);
 
     // questa non dovrebbe mai essere eseguita, si potrebbe mettere un PANIC();
     endIO(dev_num);
     return 0;
 }
 
-static int getNumRegister(int * cmdAddr) {
-
+static int getNumRegister(int *cmdAddr) {
     if ((memaddr) cmdAddr >= DEVREG_START_ADDR && (memaddr) cmdAddr < DEVREG_END_ADDR) {
         return 4;
     } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
@@ -154,9 +152,9 @@ static int getNumRegister(int * cmdAddr) {
 }
 
 static void endIO(int devnum) {
-    pcb_t* process = g_sysiostates[devnum].waiting_process;
-    int* cmdAddr = process->cmd_addr;
-    int* cmdValues = process->cmd_values;
+    pcb_t *process = g_sysiostates[devnum].waiting_process;
+    int *cmdAddr = process->cmd_addr;
+    int *cmdValues = process->cmd_values;
 
     for (int i = 0; i < getNumRegister(cmdAddr); i++) {
         cmdValues[i] = cmdAddr[i];
@@ -168,10 +166,10 @@ static void endIO(int devnum) {
     LDST(g_old_state);
 }
 
-static void beginIO(int devnum,pcb_t *process) {
-    g_sysiostates[devnum].waiting_process=process;
-    int* cmdAddr = process->cmd_addr;
-    int* cmdValues = process->cmd_values;
+static void beginIO(int devnum, pcb_t *process) {
+    g_sysiostates[devnum].waiting_process = process;
+    int *cmdAddr = process->cmd_addr;
+    int *cmdValues = process->cmd_values;
 
     for (int i = 0; i < getNumRegister(cmdAddr); i++) {
         cmdAddr[i] = cmdValues[i];
