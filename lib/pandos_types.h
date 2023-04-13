@@ -60,7 +60,12 @@ typedef struct pcb_t {
 
     /* support layer information */
     support_t *p_supportStruct;
+
+    int *cmd_addr;  // address of the device register to submit the command
+    int *cmd_values;  // values of the device register, 2 for the terminal 4 for other
+
 }   pcb_t, *pcb_PTR;
+
 
 
 /* semaphore descriptor (SEMD) data structure */
@@ -84,10 +89,12 @@ typedef struct termdev {
     devreg command;
 } termdev_t;
 
+
 typedef struct sysiostate {
-    state_t status;
-    int *cmd_addr;
-    int *cmd_values;
+    int sem_mut;  // semaphore for mutual exclusion
+    int sem_sync;  // semaphore for synchronization
+    pcb_t* waiting_process; // only one process is waiting for a device at a time
 } sysiostate_t;
+
 
 #endif

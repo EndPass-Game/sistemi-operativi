@@ -19,6 +19,9 @@ static void handleSysTimer();
 
 void exceptionHandler() {
     // see 3.4 of pandos.pdf, page 19 of pops
+    //
+    // TODO: forse dovremmo mettere un interrupt block
+    //
     unsigned int cause_bits = CAUSE_GET_EXCCODE(g_old_state->cause);
 
     switch (cause_bits) {
@@ -132,6 +135,10 @@ static void handleDeviceInt(int device_type) {
 
     if (devreg_addr == NULL) return;  // This should never happen
 
+    // TODO: use g_device semaphore resolver
+    int dev_num = 0;
+
+    endIO(dev_num);
     if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
         devreg *commandp = (devreg *) (devreg_addr + 1);
         *commandp = ACK;
@@ -148,10 +155,16 @@ static void handleDeviceInt(int device_type) {
         }
     }
 
-    // TODO: use g_device semaphore resolver
-    int *semaddr = &g_device_semaphores[0];
-    g_soft_block_count--;
-    sysVerhogen(semaddr);
+    g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
+    sysVerhogen(&g_sysiostates[dev_num].sem_sync);
+    pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
+    if (removed_pcb != NULL) {
+        beginIO(dev_num, removed_pcb);  // passing the baton pattern
+    } else {
+        g_sysiostates[dev_num].sem_mut += 1;
+    }
+
+    scheduler();
 }
 
 static void handleSysTimer() {

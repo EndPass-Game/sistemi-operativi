@@ -68,4 +68,12 @@ Se non ho nessun processo che sta runnando allora lo metto a 0
 ## Sincronizzazione devices
 
 Ogni device contiene un proprio semaforo di sincronizzazione inizializzato a 0.
-Ogni richiesta di input output
+Ogni richiesta di input output.
+
+Quando facciamo input output abbiamo un semaforo mutuaesclusione per ogni device, in modo che un singolo programma alla volta acceda a quel device.
+
+Quando un processo viene bloccato sul mutex, avrà come stato lo stato di BIOS_DATA_PAGE in modo che quando riprenderà l'esecuzione sarà già fuori dalla syscall.
+
+Abbiamo quindi un problema riguardo a quando abbiamo una DOIO su uno stesso device, il primo doio, quando finisce, deve inizializzare l'IO sul secondo device e così via finché non ci sono più device in attesa sul semaforo si wait.
+
+Quando viene issued una syscall di DOIO, questo viene sempre fermato nel semaforo di sincronizzazione, sarà riattivato solo quando ci sarà l'interrupt del device.

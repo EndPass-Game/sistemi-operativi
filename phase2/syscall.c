@@ -13,6 +13,10 @@
 #include "semaphore.h"
 #include "utils.h"
 
+// static void beginIO(int devnum, pcb_t *process);
+// static void endIO(int devnum);
+static int getNumRegister(int *cmdAddr);
+
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
         // TODO: simulate program trap, syscall without privilege
@@ -89,7 +93,6 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
 
     insertProcQ(&g_ready_queue, pcb);
     insertChild(g_current_process, pcb);
-
     // p_time and p_semadd are null/0 initialized by allocPcb.
     return (memaddr) pcb;
 }
@@ -97,13 +100,12 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
 void sysTerminateProcess(memaddr pid) {
     pcb_t *current = (pcb_t *) pid;
     terminateProcess(current);
+    scheduler();
 }
 
 void sysPasseren(int *semaddr) {
     if (*semaddr <= 0) {
         memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
-        g_debug[2] = g_current_process->p_s.pc_epc;
-
         updateProcessTime();
         insertBlocked(semaddr, g_current_process);
         g_current_process = NULL;
@@ -123,35 +125,50 @@ void sysVerhogen(int *semaddr) {
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
-    int num_registers = 0;
+    int dev_num = 0;
 
+    // TODO: mettere su epc, t9, e stack per il nuovo frame, dovrebbero bastare queste due
+    g_current_process->cmd_addr = cmdAddr;
+    g_current_process->cmd_values = cmdValues;
+
+    sysPasseren(&g_sysiostates[dev_num].sem_mut);
+    beginIO(dev_num, g_current_process);
+    endIO(dev_num);
+    return 0;
+}
+
+static int getNumRegister(int *cmdAddr) {
     if ((memaddr) cmdAddr >= DEVREG_START_ADDR && (memaddr) cmdAddr < DEVREG_END_ADDR) {
-        num_registers = 4;
+        return 4;
     } else if ((memaddr) cmdAddr >= TERMREG_START_ADDR && (memaddr) cmdAddr < TERMREG_END_ADDR) {
-        num_registers = 2;
+        return 2;
     } else
         return -1;
     // TODO: gestisci IO su dispositivo non installato, dovrebbe ritornare -1, leggi pg29
+}
 
-    for (int i = 0; i < num_registers; i++) {
-        cmdAddr[i] = cmdValues[i];
-    }
-    // int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
-    int dev_num = 0;
-    int *semaddr = &g_device_semaphores[dev_num];  // TODO: use addressresolver instead of 0
-    g_soft_block_count++;
-    updateProcessTime();
-    sysPasseren(semaddr);
-    for (int i = 0; i < num_registers; i++) {
+void endIO(int devnum) {
+    pcb_t *process = g_sysiostates[devnum].waiting_process;
+    int *cmdAddr = process->cmd_addr;
+    int *cmdValues = process->cmd_values;
+
+    for (int i = 0; i < getNumRegister(cmdAddr); i++) {
         cmdValues[i] = cmdAddr[i];
     }
+    g_soft_block_count--;
+    sysVerhogen(&g_sysiostates[devnum].sem_mut);
+}
 
-    g_debug[0] = cmdValues[0];
+void beginIO(int devnum, pcb_t *process) {
+    g_sysiostates[devnum].waiting_process = process;
+    int *cmdAddr = process->cmd_addr;
+    int *cmdValues = process->cmd_values;
 
-    g_current_process->p_s.reg_v0 = 0;  // set return value
-    LDST(&g_current_process->p_s);
-
-    return 0;
+    for (int i = 0; i < getNumRegister(cmdAddr); i++) {
+        cmdAddr[i] = cmdValues[i];
+    }
+    g_soft_block_count++;
+    sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 
 int sysGetTime(void) {
