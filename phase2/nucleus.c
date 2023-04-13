@@ -22,7 +22,7 @@ int g_process_count;
 int g_soft_block_count;
 struct list_head g_ready_queue;
 pcb_t *g_current_process;
-int g_device_semaphores[DEVICE_NUMBER];
+sysiostate_t g_sysiostates[DEVICE_NUMBER];
 int g_pseudo_clock;
 int g_debug[20];
 unsigned int g_tod;
@@ -70,7 +70,7 @@ static void initGlobalVariable() {
     g_current_process = NULL;
 
     for (int i = 0; i < DEVICE_NUMBER; i++) {
-        g_device_semaphores[i] = 0;
+        initSysIOState(i);
     }
     g_pseudo_clock = 1;
     g_tod = 0;
@@ -81,4 +81,12 @@ static void initGlobalVariable() {
 
     passupvector->exception_handler = (memaddr) exceptionHandler;
     passupvector->exception_stackPtr = (memaddr) KERNELSTACK;
+}
+
+static void initSysIOState(int dev_num) {
+    g_sysiostates[dev_num].sem_mut = 1;
+    g_sysiostates[dev_num].sem_sync = 0;
+    g_sysiostates[dev_num].waiting_process = NULL;
+    // g_sysiostates[dev_num].cmd_addr = NULL;
+    // g_sysiostates[dev_num].cmd_values = NULL;
 }
