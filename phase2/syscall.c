@@ -160,7 +160,7 @@ void endIO(int devnum) {
     for (int i = 0; i < getNumRegister(cmdAddr); i++) {
         cmdValues[i] = cmdAddr[i];
     }
-
+    g_soft_block_count--;
     sysVerhogen(&g_sysiostates[devnum].sem_mut);
 }
 

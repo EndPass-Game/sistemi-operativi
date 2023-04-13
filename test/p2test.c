@@ -21,6 +21,8 @@
 #include <pandos_types.h>
 #include <umps3/umps/libumps.h>
 
+#include "nucleus.h"
+
 typedef unsigned int devregtr;
 
 /* hardware constants */
@@ -119,6 +121,8 @@ void print(char *msg) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr) *s) << 8)};
         status = SYSCALL(DOIO, (int) command, (int) value, 0);
         if (status != 0 || (value[0] & TERMSTATMASK) != RECVD) {
+            g_debug[0] = status;
+            g_debug[1] = value[0];
             PANIC();
         }
         s++;
