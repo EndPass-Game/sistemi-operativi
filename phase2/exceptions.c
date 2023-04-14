@@ -101,8 +101,6 @@ static void interruptHandler() {
 }
 
 static void handleSysTimer() {
-    LDIT(PSECOND / 10);
-
     // Altra implementazione possibile è chiamare V finché ho processi bloccati.
     pcb_t *outBlocked = NULL;
     while ((outBlocked = removeBlocked(&g_pseudo_clock)) != NULL) {
@@ -110,6 +108,7 @@ static void handleSysTimer() {
     }
 
     g_pseudo_clock = 0;
+    LDIT(PSECOND / 10);
 }
 
 static void handleLocalTimer() {

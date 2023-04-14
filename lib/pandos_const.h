@@ -151,7 +151,7 @@
 #define NOPROC     -1
 #define BYTELENGTH 8
 
-#define PSECOND    100000
+#define PSECOND    1000000
 #define TIMESLICE  5000 /* length of proc's time slice	*/
 #define NEVER      0x7FFFFFFF
 #define SECOND     1000000

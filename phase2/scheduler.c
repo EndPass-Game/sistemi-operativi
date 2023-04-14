@@ -6,22 +6,21 @@
 #include "nucleus.h"
 #include "process.h"
 
-int what2 = 0xFF;
 void scheduler() {
-    // Disabilitiamo gli interrupt perché altrimenti potrei avere
-    // un interrupt subito dopo il check ad g_soft_block_count > 0
-    // e l'interrupt mi setta dopo questo check che il soft block count è 0
     unsigned int old_status = getSTATUS();
-    what2 = emptyProcQ(&g_ready_queue);
-    while (emptyProcQ(&g_ready_queue)) {
-        setSTATUS(old_status & ~STATUS_IEc);
+    if (emptyProcQ(&g_ready_queue)) {
         if (g_process_count == 0) {
             HALT();
         } else if (g_process_count > 0 && g_soft_block_count > 0) {
             // set the status register to enable all interrupts
             // disable the Process Local Timer
             setSTATUS((old_status | STATUS_IEc | STATUS_IM_MASK) & ~STATUS_TE);
-            WAIT();
+            // ci può essere un interrupt subito dopo setStatus che mi mette un processo
+            // se succede non vogliamo aspettare, se succede appena dopo faccio
+            // il check amen, si aspettera il clock timer interrupt
+            if (emptyProcQ(&g_ready_queue)) {
+                WAIT();
+            }
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
             // deadlock found TODO: how to detech deadlocks?
             PANIC();

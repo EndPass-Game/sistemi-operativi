@@ -153,8 +153,6 @@ void sysClockWait(void) {
     // TODO: the other part is handled in the interrupt
     //  the interrupt need to mange this semaphore lika a binary sempahore
     //  **not an ordinary semaphore**
-
-    updateProcessTime();
     sysPasseren(&g_pseudo_clock);
 }
 
