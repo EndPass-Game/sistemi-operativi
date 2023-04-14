@@ -80,7 +80,8 @@ int sem_term_mut = 1,              /* for mutual exclusion on terminal */
     sem_endcreate[NOLEAVES] = {0}, /* for a p8 leaf to signal its creation */
     sem_blkp8 = 0,                 /* to block p8 */
     sem_blkp9 = 0,                 /* to block p9 */
-    sem_ns = 0;                    /* to block p11 children and check for namespaces */
+    sem_ns = 1,                   /* to block p11 children and check for namespaces */
+    sem_endns = 0;                 /* to signal demise of p11 */   
 
 state_t p2state, p3state, p4state, p5state, p6state, p7state, p8rootstate,
     child1state, child2state, gchild1state, gchild2state, gchild3state,
@@ -328,6 +329,8 @@ void test() {
 
     /* Check for namespace creation */
     p11pid = SYSCALL(CREATEPROCESS, (int) &p11state, (int) NULL, (int) NULL);
+
+    SYSCALL(PASSEREN, (int) &sem_endns, 0, 0);
 
     print("p1 finishes OK -- TTFN\n");
     *((memaddr *) BADADDR) = 0; /* terminate p1 */
@@ -598,6 +601,7 @@ void p5b() {
     SYSCALL(11, 0, 0, 0);
     SYSCALL(PASSEREN, (int) &sem_endp4, 0, 0); /* P(sem_endp4)*/
 
+    print("B going to wait now\n");
     /* do some delay to be reasonably sure p4 and its offspring are dead */
     time1 = 0;
     time2 = 0;
@@ -616,7 +620,7 @@ void p5b() {
     /* since this has already been      */
     /* done for PROGTRAPs               */
 
-    print("p5b: terminating\n");
+    print("5pb: terminating\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
 
     /* should have terminated, so should not get to this point */
@@ -833,14 +837,14 @@ void p11() {
     /* Get children should return only the number of children in our namespace */
     children_number = SYSCALL(GETCHILDREN, (int) NULL, 0, 0);
     if (children_number != 2) {
-        print("Inconsistent GETCHILDREN namespace management\n");
+        print("Inconsistent GETCHILDREN namespace management 1\n");
         PANIC();
     }
 
     /* Get children should return only the number of children in our namespace */
     children_number = SYSCALL(GETCHILDREN, (memaddr) children_pids, NS_MAXCHILDREN, 0);
     if (children_number != 2) {
-        print("Inconsistent GETCHILDREN namespace management\n");
+        print("Inconsistent GETCHILDREN namespace management 2\n");
         PANIC();
     }
 
@@ -862,6 +866,7 @@ void p11() {
     for (i = 0; i < 4; ++i)
         SYSCALL(VERHOGEN, (int) &sem_ns, 0, 0);
 
+    SYSCALL(VERHOGEN, (int) &sem_endns, 0, 0);
     /* Terminate all process */
     SYSCALL(TERMPROCESS, 0, 0, 0);
 
