@@ -20,7 +20,7 @@
  *
  * @param pcb
  */
-static void terminateProcess(pcb_t *pcb);
+static void terminateChildProcs(struct  list_head *child_head);
 
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
@@ -104,7 +104,10 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
 
 void sysTerminateProcess(memaddr pid) {
     pcb_t *current = (pcb_t *) pid;
-    terminateProcess(current);
+    terminateChildProcs(&current->p_child);
+
+    g_process_count--;
+    freePcb(current);
     scheduler();
 }
 
@@ -226,37 +229,34 @@ static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *curre
 }
 
 
-static void terminateProcess(pcb_t *pcb) {
-    outChild(pcb);
-
-    // Trovare semaforo in cui sono bloccato, e toglierlo.
-    // controllare se sono bloccato 
-    int *blocked_sem = pcb->p_semAdd;
-    if (blocked_sem != NULL) {
-        pcb_t *removed_pcb = outBlocked(pcb);
-        if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] && 
-            (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
-            if (removed_pcb != NULL) {
-                g_soft_block_count--;
-            }
-        }
-    }
+static void terminateChildProcs(struct list_head *child_head) {
+    pcb_t *to_delete[MAX_PROC];
+    int to_delete_size = 0;
 
     struct list_head *pos = NULL;
-    pcb_t *to_eliminate[MAX_PROC];
-    int to_eliminate_size = 0;
-    list_for_each(pos, &pcb->p_child) {
-        pcb_t *child_proc = container_of(pos, pcb_t, p_sib);
-        to_eliminate[to_eliminate_size] = child_proc;
-        to_eliminate_size++;
+    list_for_each(pos, child_head) {
+        pcb_t *curr_proc = container_of(pos, pcb_t, p_sib);
+        terminateChildProcs(&curr_proc->p_child);
+        to_delete_size++;
     }
 
     // non mettere terminate process dentro al list for each,
     // non possiamo modificare la lista mentre la iteriamo.
-    for (int i = 0; i < to_eliminate_size; i++) {
-        terminateProcess(to_eliminate[i]);
+    for (int i = 0; i < to_delete_size; i++) {
+        // Trovare semaforo in cui sono bloccato, e toglierlo.
+        // controllare se sono bloccato 
+        int *blocked_sem = to_delete[i]->p_semAdd;
+        if (blocked_sem != NULL) {
+            pcb_t *removed_pcb = outBlocked(to_delete[i]);
+            if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] && 
+                (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
+                if (removed_pcb != NULL) {
+                    g_soft_block_count--;
+                }
+            }
+        }
+        g_process_count--;
+        outChild(to_delete[i]);
+        freePcb(to_delete[i]);
     }
-
-    g_process_count--;
-    freePcb(pcb);
 }
