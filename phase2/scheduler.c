@@ -8,7 +8,7 @@
 
 void scheduler() {
     unsigned int old_status = getSTATUS();
-    if (emptyProcQ(&g_ready_queue)) {
+    while (emptyProcQ(&g_ready_queue)) {
         if (g_process_count == 0) {
             HALT();
         } else if (g_process_count > 0 && g_soft_block_count > 0) {
@@ -18,9 +18,8 @@ void scheduler() {
             // ci può essere un interrupt subito dopo setStatus che mi mette un processo
             // se succede non vogliamo aspettare, se succede appena dopo faccio
             // il check amen, si aspettera il clock timer interrupt
-            if (emptyProcQ(&g_ready_queue)) {
-                WAIT();
-            }
+            if (!emptyProcQ(&g_ready_queue)) break;
+            WAIT();
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
             // deadlock found TODO: how to detech deadlocks?
             PANIC();
