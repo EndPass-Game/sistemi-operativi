@@ -95,6 +95,7 @@ static devreg *findDevRegAddr(int device_type) {
 }
 
 static void ackDevice(devreg *devreg_addr) {
+    // TODO: check if device has error, if error the procedure should return -1.
     if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
         devreg *commandp = (devreg *) (devreg_addr + 1);
         *commandp = ACK;

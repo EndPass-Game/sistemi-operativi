@@ -271,7 +271,6 @@ void test() {
 
     SYSCALL(VERHOGEN, (int) &sem_startp2, 0, 0); /* V(sem_startp2)   */
 
-    g_debug[0] = (int) headProcQ(&g_ready_queue);
     SYSCALL(PASSEREN, (int) &sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
 
     /* make sure we really blocked */
