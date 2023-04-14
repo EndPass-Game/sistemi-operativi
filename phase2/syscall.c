@@ -103,6 +103,9 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
 
 void sysTerminateProcess(memaddr pid) {
     pcb_t *current = (pcb_t *) pid;
+    if (current == NULL) {
+        current = g_current_process;
+    }
     terminateProcess(current);
     scheduler();
 }
