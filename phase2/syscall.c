@@ -14,13 +14,12 @@
 #include "semaphore.h"
 #include "utils.h"
 
-
 /**
  * @brief Termina tutti i PCB figli e il corrente mettendoli nella free list
  *
  * @param pcb
  */
-static void terminateChildProcs(struct  list_head *child_head);
+static void terminateChildProcs(struct list_head *child_head);
 
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
@@ -228,7 +227,6 @@ static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *curre
     return same_namespace_num;
 }
 
-
 static void terminateChildProcs(struct list_head *child_head) {
     pcb_t *to_delete[MAX_PROC];
     int to_delete_size = 0;
@@ -244,11 +242,11 @@ static void terminateChildProcs(struct list_head *child_head) {
     // non possiamo modificare la lista mentre la iteriamo.
     for (int i = 0; i < to_delete_size; i++) {
         // Trovare semaforo in cui sono bloccato, e toglierlo.
-        // controllare se sono bloccato 
+        // controllare se sono bloccato
         int *blocked_sem = to_delete[i]->p_semAdd;
         if (blocked_sem != NULL) {
             pcb_t *removed_pcb = outBlocked(to_delete[i]);
-            if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] && 
+            if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] &&
                 (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
                 if (removed_pcb != NULL) {
                     g_soft_block_count--;
