@@ -101,7 +101,10 @@ void sysTerminateProcess(memaddr pid) {
 }
 
 void sysPasseren(int *semaddr) {
-    if (*semaddr <= 0) {
+    pcb_t *removed_pcb = removeBlocked(semaddr);
+    if (removed_pcb != NULL) {
+        insertProcQ(&g_ready_queue, removed_pcb);
+    } else if (*semaddr <= 0) {
         memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
         updateProcessTime();
         insertBlocked(semaddr, g_current_process);
@@ -116,6 +119,12 @@ void sysVerhogen(int *semaddr) {
     pcb_t *removed_pcb = removeBlocked(semaddr);
     if (removed_pcb != NULL) {
         insertProcQ(&g_ready_queue, removed_pcb);
+    } else if (*semaddr >= 1) {
+        memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
+        updateProcessTime();
+        insertBlocked(semaddr, g_current_process);
+        g_current_process = NULL;
+        scheduler();
     } else {
         *semaddr = *semaddr + 1;
     }

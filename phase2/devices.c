@@ -42,7 +42,6 @@ void handleDeviceInt(int device_type) {
         beginIO(dev_num, removed_pcb);  // passing the baton pattern
     } else {
         g_sysiostates[dev_num].sem_mut += 1;
-        sysVerhogen(&g_sysiostates[dev_num].sem_mut);
     }
 }
 
