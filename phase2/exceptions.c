@@ -57,9 +57,10 @@ void passUpOrDie(int passupType) {
     if (g_current_process == NULL || g_current_process->p_supportStruct == NULL) {
         sysTerminateProcess((memaddr) g_current_process);
     } else {
-        state_t *target_state = &g_current_process->p_supportStruct->sup_exceptState[passupType];
-        memcpy((void *) target_state, (void *) BIOS_DATA_PAGE_BASE, sizeof(state_t));
-        LDCXT(target_state->reg_sp, target_state->status, target_state->pc_epc);
+        context_t *context = &g_current_process->p_supportStruct->sup_exceptContext[passupType];
+        state_t *target = &g_current_process->p_supportStruct->sup_exceptState[passupType];
+        memcpy((void *) target, (void *) g_old_state, sizeof(state_t));
+        LDCXT(context->stackPtr, context->status, context->pc);
     }
 }
 

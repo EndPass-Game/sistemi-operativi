@@ -388,7 +388,8 @@ void p2() {
     p1p2synch = 1; /* p1 will check this */
 
     SYSCALL(PASSEREN, (int) &sem_endp2, 0, 0); /* P(sem_endp2)    unblocking P ! */
-
+    
+    print("p2 finishes OK -- TTFN\n");
     SYSCALL(TERMPROCESS, 0, 0, 0); /* terminate p2 */
 
     /* just did a SYS2, so should not get to this point */
@@ -438,6 +439,7 @@ void p3() {
 
     SYSCALL(VERHOGEN, (int) &sem_endp3, 0, 0); /* V(sem_endp3)        */
 
+    print("p3 finishes OK -- TTFN\n");
     SYSCALL(TERMPROCESS, 0, 0, 0); /* terminate p3    */
 
     /* just did a SYS2, so should not get to this point */
@@ -481,10 +483,11 @@ void p4() {
 
     SYSCALL(PASSEREN, (int) &sem_synp4, 0, 0); /* wait for it       */
 
-    print("p4 is OK\n");
+    print("4p is OK\n");
 
     SYSCALL(VERHOGEN, (int) &sem_endp4, 0, 0); /* V(sem_endp4)          */
 
+    print("terminazione p4\n");
     SYSCALL(TERMPROCESS, 0, 0, 0); /* terminate p4      */
 
     /* just did a SYS2, so should not get to this point */
@@ -571,7 +574,7 @@ void p5sys() {
 
 /* p5 -- SYS5 test process */
 void p5() {
-    print("p5 starts\n");
+    print("5p starts\n");
 
     /* cause a pgm trap access some non-existent memory */
     *p5MemLocation = *p5MemLocation + 1; /* Should cause a program trap */
@@ -619,7 +622,7 @@ void p5b() {
 
 /*p6 -- high level syscall without initializing passup vector */
 void p6() {
-    print("p6 starts\n");
+    print("6p6 starts\n");
 
     SYSCALL(1, 0, 0, 0); /* should cause termination because p6 has no
            trap vector */
@@ -631,7 +634,7 @@ void p6() {
 
 /*p7 -- program trap without initializing passup vector */
 void p7() {
-    print("p7 starts\n");
+    print("7p7 starts\n");
 
     *((memaddr *) BADADDR) = 0;
 
@@ -645,7 +648,7 @@ void p7() {
 void p8root() {
     int grandchild;
 
-    print("p8root starts\n");
+    print("8proot starts\n");
     SYSCALL(CREATEPROCESS, (int) &child1state, (int) NULL, (int) NULL);
 
     SYSCALL(CREATEPROCESS, (int) &child2state, (int) NULL, (int) NULL);
@@ -720,7 +723,7 @@ void p8leaf4() {
 }
 
 void p9() {
-    print("p9 starts\n");
+    print("9p9 starts\n");
 
     SYSCALL(CREATEPROCESS, (int) &p10state, (int) NULL, (int) NULL); /* start p7		*/
 

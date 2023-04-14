@@ -108,11 +108,4 @@ pcb_t *removeChild(pcb_t *parent);
  */
 pcb_t *outChild(pcb_t *child);
 
-/**
- * @brief Termina tutti i PCB figli e il corrente mettendoli nella free list
- *
- * @param pcb
- */
-
-void terminateProcess(pcb_t *pcb);
 #endif /* _PROCESS_H */
