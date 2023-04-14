@@ -305,6 +305,7 @@ void test() {
 
     p9pid = SYSCALL(CREATEPROCESS, (int) &p9state, (int) NULL, (int) NULL); /* start p7		*/
 
+    print("p9 was just created\n");
     SYSCALL(PASSEREN, (int) &sem_endp5, 0, 0); /* P(sem_endp5)		*/
 
     print("p1 knows p5 ended\n");
@@ -479,6 +480,7 @@ void p4() {
 
     p4state.reg_sp -= QPAGE; /* give another page  */
 
+
     p4pid = SYSCALL(CREATEPROCESS, (int) &p4state, (int) NULL, (int) NULL); /* start a new p4    */
 
     SYSCALL(PASSEREN, (int) &sem_synp4, 0, 0); /* wait for it       */
@@ -624,7 +626,7 @@ void p5b() {
 void p6() {
     print("6p6 starts\n");
 
-    SYSCALL(1, 0, 0, 0); /* should cause termination because p6 has no
+    SYSCALL(11, 0, 0, 0); /* should cause termination because p6 has no
            trap vector */
 
     print("error: p6 alive after SYS9() with no trap vector\n");
@@ -739,6 +741,7 @@ void p10() {
         PANIC();
     }
 
+    print("p10 is calling term\n");
     SYSCALL(TERMPROCESS, ppid, 0, 0);
 
     print("Error: p10 didn't die with its parent!\n");
@@ -748,6 +751,7 @@ void p10() {
 void hp_p1() {
     print("hp_p1 starts\n");
 
+    print("killing hp_p1\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: hp_p1 didn't die!\n");
     PANIC();
@@ -760,6 +764,8 @@ void hp_p2() {
         SYSCALL(CLOCKWAIT, 0, 0, 0);
     }
 
+
+    print("killing hp_p2\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: hp_p2 didn't die!\n");
     PANIC();
