@@ -14,7 +14,6 @@
 #include "semaphore.h"
 #include "utils.h"
 
-
 /**
  * @brief Termina tutti i PCB figli e il corrente mettendoli nella free list
  *
@@ -225,16 +224,15 @@ static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *curre
     return same_namespace_num;
 }
 
-
 static void terminateProcess(pcb_t *pcb) {
     outChild(pcb);
 
     // Trovare semaforo in cui sono bloccato, e toglierlo.
-    // controllare se sono bloccato 
+    // controllare se sono bloccato
     int *blocked_sem = pcb->p_semAdd;
     if (blocked_sem != NULL) {
         pcb_t *removed_pcb = outBlocked(pcb);
-        if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] && 
+        if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] &&
             (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
             if (removed_pcb != NULL) {
                 g_soft_block_count--;
