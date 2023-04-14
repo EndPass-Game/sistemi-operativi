@@ -104,11 +104,12 @@ static void handleSysTimer() {
     // Altra implementazione possibile è chiamare V finché ho processi bloccati.
     pcb_t *outBlocked = NULL;
     while ((outBlocked = removeBlocked(&g_pseudo_clock)) != NULL) {
+        g_soft_block_count--;
         insertProcQ(&g_ready_queue, outBlocked);
     }
 
     g_pseudo_clock = 0;
-    LDIT(PSECOND / 10);
+    LDIT(PSECOND);
 }
 
 static void handleLocalTimer() {

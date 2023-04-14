@@ -153,6 +153,7 @@ void sysClockWait(void) {
     // TODO: the other part is handled in the interrupt
     //  the interrupt need to mange this semaphore lika a binary sempahore
     //  **not an ordinary semaphore**
+    g_soft_block_count++;
     sysPasseren(&g_pseudo_clock);
 }
 

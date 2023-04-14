@@ -43,7 +43,7 @@ int main() {
     initNamespaces();
 
     // Load system interval timer to 100ms
-    LDIT(PSECOND / 10);
+    LDIT(PSECOND);
     launchInit();
 
     scheduler();
