@@ -592,9 +592,10 @@ void p5a() {
 /* second part of p5 - should be entered in user mode first time through */
 /* should generate a program trap (Address error) */
 void p5b() {
+    print("p5b has just started\n");
     cpu_t time1, time2;
 
-    SYSCALL(1, 0, 0, 0);
+    SYSCALL(11, 0, 0, 0);
     SYSCALL(PASSEREN, (int) &sem_endp4, 0, 0); /* P(sem_endp4)*/
 
     /* do some delay to be reasonably sure p4 and its offspring are dead */
@@ -615,6 +616,7 @@ void p5b() {
     /* since this has already been      */
     /* done for PROGTRAPs               */
 
+    print("p5b: terminating\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
 
     /* should have terminated, so should not get to this point */
