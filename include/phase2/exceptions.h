@@ -13,7 +13,6 @@ void exceptionHandler();
  */
 void passUpOrDie(int passupType);
 
-
 unsigned int getPassedTime();
 
 // updates last value of the time of day

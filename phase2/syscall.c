@@ -5,6 +5,7 @@
 #include <umps3/umps/libumps.h>    // LDST
 
 #include "def-syscall.h"  // sycall codes
+#include "devices.h"
 #include "exceptions.h"
 #include "namespace.h"
 #include "nucleus.h"
@@ -12,7 +13,6 @@
 #include "scheduler.h"
 #include "semaphore.h"
 #include "utils.h"
-#include "devices.h"
 
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {

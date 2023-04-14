@@ -5,12 +5,12 @@
 #include <umps3/umps/libumps.h>
 #include <umps3/umps/types.h>
 
+#include "devices.h"  // interruptHandler
 #include "nucleus.h"
 #include "scheduler.h"
 #include "semaphore.h"  // removeBlocked1
 #include "syscall.h"    // syscallHandler
 #include "utils.h"      // memcpy
-#include "devices.h"    // interruptHandler
 
 static void interruptHandler();
 static void handleLocalTimer();
