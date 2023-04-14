@@ -243,9 +243,18 @@ static void terminateProcess(pcb_t *pcb) {
     }
 
     struct list_head *pos = NULL;
+    pcb_t *to_eliminate[MAX_PROC];
+    int to_eliminate_size = 0;
     list_for_each(pos, &pcb->p_child) {
         pcb_t *child_proc = container_of(pos, pcb_t, p_sib);
-        terminateProcess(child_proc);
+        to_eliminate[to_eliminate_size] = child_proc;
+        to_eliminate_size++;
+    }
+
+    // non mettere terminate process dentro al list for each,
+    // non possiamo modificare la lista mentre la iteriamo.
+    for (int i = 0; i < to_eliminate_size; i++) {
+        terminateProcess(to_eliminate[i]);
     }
 
     g_process_count--;
