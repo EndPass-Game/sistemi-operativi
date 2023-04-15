@@ -200,12 +200,11 @@ int sysGetProcessID(int is_parent) {
 }
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb);
 
-
 int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
-    
+
     int used_size = 0;
-    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1; 
+    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1;
 }
 
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb) {
@@ -220,12 +219,12 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
     list_for_each(pos, &pcb->p_child) {
         pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
         same_namespace_num += getChildsByNamespace(
-                                  children,
-                                  total_size,
-                                  used_size,
-                                  current_namespace,
-                                  curr_pcb
-                              );
+            children,
+            total_size,
+            used_size,
+            current_namespace,
+            curr_pcb
+        );
     }
 
     return same_namespace_num + 1;
@@ -264,9 +263,9 @@ static bool isDeviceSemaphore(memaddr semaddr) {
 
     // Attualmente questa implemententazione è basata fortemente sulla struttura di sysiostate
     // che ha nelle prime 2 word i due semafori.
-    return offsetted <= 2 * sizeof(int) && 
-        (memaddr) semaddr >= (memaddr) &g_sysiostates[0] &&
-            (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER];
+    return offsetted <= 2 * sizeof(int) &&
+           (memaddr) semaddr >= (memaddr) &g_sysiostates[0] &&
+           (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER];
 }
 
 static void updateSemOnTermination(pcb_t *terminated_proc) {
@@ -277,7 +276,7 @@ static void updateSemOnTermination(pcb_t *terminated_proc) {
     if (removed_pcb == NULL) {
         // non dovrebbe mai succedere se si utilizzano solo le funzioni di libreria
         // di semaphore.h, per sicurezza ritorniano.
-        return;  
+        return;
     }
 
     // TODO: trova l'offset corretto per g_sysiostates, a seconda di blocked_sem
@@ -285,10 +284,12 @@ static void updateSemOnTermination(pcb_t *terminated_proc) {
         if (g_sysiostates[0].waiting_process == terminated_proc) {
             g_soft_block_count--;
             g_sysiostates[0].sem_sync = -1;
-        } // else do nothing
+        }  // else do nothing
     } else {
-        if (*blocked_sem > 1) *blocked_sem -= 1;
-        else if (*blocked_sem < 0) *blocked_sem += 1;
+        if (*blocked_sem > 1)
+            *blocked_sem -= 1;
+        else if (*blocked_sem < 0)
+            *blocked_sem += 1;
         // i casi 0 e 1 non dovrebbero mai succedere, su questi valori non
         // si blocca nessun semaforo.
     }
