@@ -21,7 +21,6 @@
  */
 static void terminateProcess(pcb_t *pcb);
 
-
 /**
  * @brief Controlla se l'indirizzo di semaddr è un semaforo mut o sync di un device
  */
@@ -199,12 +198,11 @@ int sysGetProcessID(int is_parent) {
 }
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb);
 
-
 int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
-    
+
     int used_size = 0;
-    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1; 
+    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1;
 }
 
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb) {
@@ -219,12 +217,12 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
     list_for_each(pos, &pcb->p_child) {
         pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
         same_namespace_num += getChildsByNamespace(
-                                  children,
-                                  total_size,
-                                  used_size,
-                                  current_namespace,
-                                  curr_pcb
-                              );
+            children,
+            total_size,
+            used_size,
+            current_namespace,
+            curr_pcb
+        );
     }
 
     return same_namespace_num + 1;
@@ -240,10 +238,10 @@ static void terminateProcess(pcb_t *pcb) {
         pcb_t *removed_pcb = outBlocked(pcb);
 
         // TODO: trova l'offset corretto per g_sysiostates, a seconda di blocked_sem
-        if (removed_pcb != NULL && isDeviceSemaphore((memaddr) blocked_sem) && 
+        if (removed_pcb != NULL && isDeviceSemaphore((memaddr) blocked_sem) &&
             g_sysiostates[0].waiting_process == pcb) {
-                g_soft_block_count--;
-                g_sysiostates[0].sem_sync = -1;
+            g_soft_block_count--;
+            g_sysiostates[0].sem_sync = -1;
         }
     }
 
@@ -275,7 +273,7 @@ static bool isDeviceSemaphore(memaddr semaddr) {
 
     // Attualmente questa implemententazione è basata fortemente sulla struttura di sysiostate
     // che ha nelle prime 2 word i due semafori.
-    return offsetted <= 2 * sizeof(int) && 
-        (memaddr) semaddr >= (memaddr) &g_sysiostates[0] &&
-            (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER];
+    return offsetted <= 2 * sizeof(int) &&
+           (memaddr) semaddr >= (memaddr) &g_sysiostates[0] &&
+           (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER];
 }
