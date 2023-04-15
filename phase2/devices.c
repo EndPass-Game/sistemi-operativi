@@ -32,7 +32,7 @@ void handleDeviceInt(int device_type) {
     int dev_num = 0;
 
     // see documentation, sync semafore section for -1 meaning
-    if (g_sysiostates[dev_num].sem_sync != -1) {
+    if (g_sysiostates[dev_num].waiting_process != NULL) {
         endIO(dev_num);
         g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
     }

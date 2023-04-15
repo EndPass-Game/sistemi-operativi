@@ -21,11 +21,15 @@
  */
 static void terminateProcess(pcb_t *pcb);
 
-
 /**
  * @brief Controlla se l'indirizzo di semaddr è un semaforo mut o sync di un device
  */
 static bool isDeviceSemaphore(memaddr semaddr);
+
+/**
+ * @brief updates semaphore values of terminated process
+ */
+static void updateSemOnTermination(pcb_t *terminated_proc);
 
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
@@ -117,37 +121,35 @@ void sysTerminateProcess(memaddr pid) {
 }
 
 void sysPasseren(int *semaddr) {
-    if (*semaddr == 1) {
+    *semaddr -= 1;
+    if (*semaddr < 0) {
+        memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
+        updateProcessTime();
+        insertBlocked(semaddr, g_current_process);
+        g_current_process = NULL;
+        scheduler();
+    } else {
         pcb_t *removed_pcb = removeBlocked(semaddr);
         if (removed_pcb != NULL) {
             insertProcQ(&g_ready_queue, removed_pcb);
-        } else {
-            *semaddr = *semaddr - 1;
         }
-        return;
     }
-    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
-    updateProcessTime();
-    insertBlocked(semaddr, g_current_process);
-    g_current_process = NULL;
-    scheduler();
 }
 
 void sysVerhogen(int *semaddr) {
-    if (*semaddr == 0) {
+    *semaddr += 1;
+    if (*semaddr > 1) {
+        memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
+        updateProcessTime();
+        insertBlocked(semaddr, g_current_process);
+        g_current_process = NULL;
+        scheduler();
+    } else {
         pcb_t *removed_pcb = removeBlocked(semaddr);
         if (removed_pcb != NULL) {
             insertProcQ(&g_ready_queue, removed_pcb);
-        } else {
-            *semaddr = *semaddr + 1;
         }
-        return;
     }
-    memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
-    updateProcessTime();
-    insertBlocked(semaddr, g_current_process);
-    g_current_process = NULL;
-    scheduler();
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
@@ -158,7 +160,6 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 
     sysPasseren(&g_sysiostates[dev_num].sem_mut);
     beginIO(dev_num, g_current_process);
-    endIO(dev_num);
     return 0;
 }
 
@@ -233,19 +234,7 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
 static void terminateProcess(pcb_t *pcb) {
     outChild(pcb);
 
-    // Trovare semaforo in cui sono bloccato, e toglierlo.
-    // controllare se sono bloccato
-    int *blocked_sem = pcb->p_semAdd;
-    if (blocked_sem != NULL) {
-        pcb_t *removed_pcb = outBlocked(pcb);
-
-        // TODO: trova l'offset corretto per g_sysiostates, a seconda di blocked_sem
-        if (removed_pcb != NULL && isDeviceSemaphore((memaddr) blocked_sem) && 
-            g_sysiostates[0].waiting_process == pcb) {
-                g_soft_block_count--;
-                g_sysiostates[0].sem_sync = -1;
-        }
-    }
+    updateSemOnTermination(pcb);
 
     // TODO: esiste una implementazione migliore di terminate process
     // utilizza removeChild, invece di outchild, così non devo storarmi
@@ -278,4 +267,29 @@ static bool isDeviceSemaphore(memaddr semaddr) {
     return offsetted <= 2 * sizeof(int) && 
         (memaddr) semaddr >= (memaddr) &g_sysiostates[0] &&
             (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER];
+}
+
+static void updateSemOnTermination(pcb_t *terminated_proc) {
+    int *blocked_sem = terminated_proc->p_semAdd;
+    if (blocked_sem == NULL) return;
+
+    pcb_t *removed_pcb = outBlocked(terminated_proc);
+    if (removed_pcb == NULL) {
+        // non dovrebbe mai succedere se si utilizzano solo le funzioni di libreria
+        // di semaphore.h, per sicurezza ritorniano.
+        return;  
+    }
+
+    // TODO: trova l'offset corretto per g_sysiostates, a seconda di blocked_sem
+    if (isDeviceSemaphore((memaddr) blocked_sem)) {
+        if (g_sysiostates[0].waiting_process == terminated_proc) {
+            g_soft_block_count--;
+            g_sysiostates[0].sem_sync = -1;
+        } // else do nothing
+    } else {
+        if (*blocked_sem > 1) *blocked_sem -= 1;
+        else if (*blocked_sem < 0) *blocked_sem += 1;
+        // i casi 0 e 1 non dovrebbero mai succedere, su questi valori non
+        // si blocca nessun semaforo.
+    }
 }
