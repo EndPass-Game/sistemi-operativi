@@ -199,12 +199,11 @@ int sysGetProcessID(int is_parent) {
 }
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb);
 
-
 int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
-    
+
     int used_size = 0;
-    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1; 
+    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1;
 }
 
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb) {
@@ -219,12 +218,12 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
     list_for_each(pos, &pcb->p_child) {
         pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
         same_namespace_num += getChildsByNamespace(
-                                  children,
-                                  total_size,
-                                  used_size,
-                                  current_namespace,
-                                  curr_pcb
-                              );
+            children,
+            total_size,
+            used_size,
+            current_namespace,
+            curr_pcb
+        );
     }
 
     return same_namespace_num + 1;
@@ -246,14 +245,14 @@ static void terminateProcess(pcb_t *pcb) {
         if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] &&
             (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
             if (removed_pcb != NULL) {
-                    // TODO:  make this general
-                    g_debug[10] = 1;
-                    if(g_sysiostates[0].waiting_process==pcb) {
-                        g_soft_block_count--;
-                         //g_sysiostates[0].sem_mut=1;  // gestito da interrupt 
-                        g_sysiostates[0].sem_sync = -1;
-                    }
+                // TODO:  make this general
+                g_debug[10] = 1;
+                if (g_sysiostates[0].waiting_process == pcb) {
+                    g_soft_block_count--;
+                    // g_sysiostates[0].sem_mut=1;  // gestito da interrupt
+                    g_sysiostates[0].sem_sync = -1;
                 }
+            }
         }
     }
 
@@ -263,14 +262,11 @@ static void terminateProcess(pcb_t *pcb) {
     return;
     outChild(pcb);
 
-    
     // sync dovrebbe restare sempre a 0, però se io ce lo tolto con term process quando
     // c'è qualcosa di bloccat sopra, quando arriva, l'interrupt questo interrupt fa V
-    // e quindi non vedendo che ci sia bloccato qualcosa, aggiunge 1.  
+    // e quindi non vedendo che ci sia bloccato qualcosa, aggiunge 1.
 
-    // TODO: aggiungi nella doc, abbiamo come invariante che ogni elemento di g_sysio   
-
-    
+    // TODO: aggiungi nella doc, abbiamo come invariante che ogni elemento di g_sysio
 
     struct list_head *pos = NULL;
     pcb_t *to_eliminate[MAX_PROC];

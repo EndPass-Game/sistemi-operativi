@@ -58,7 +58,7 @@ static void launchInit() {
     pcb_t *pcb = allocPcb();
 
     init_pcb = (int) pcb;
-    
+
     pcb->p_s.status |= STATUS_IEp | STATUS_TE | STATUS_IM_MASK;
     pcb->p_s.pc_epc = (memaddr) test;
     pcb->p_s.reg_t9 = pcb->p_s.pc_epc;
@@ -80,7 +80,6 @@ static void initGlobalVariable() {
     g_pseudo_clock = 1;
     g_tod = 0;
 
-
     passupvector_t *passupvector = (passupvector_t *) PASSUPVECTOR;
     passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passupvector->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
@@ -93,7 +92,7 @@ static void initSysIOState(int dev_num) {
     g_sysiostates[dev_num].sem_mut = 1;
     g_sysiostates[dev_num].sem_sync = 0;
     g_sysiostates[dev_num].waiting_process = NULL;
-    
+
     // g_sysiostates[dev_num].cmd_addr = NULL;
     // g_sysiostates[dev_num].cmd_values = NULL;
 }
