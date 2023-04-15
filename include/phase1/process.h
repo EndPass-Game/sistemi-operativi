@@ -76,6 +76,8 @@ pcb_t *removeProcQ(struct list_head *head);
  */
 pcb_t *outProcQ(struct list_head *head, pcb_t *p);
 
+int getQueueLen(struct list_head *head);
+
 /**
  * @brief funzione utilizzata per fare un check sull'esistenza dei figli
  *

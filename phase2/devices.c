@@ -41,6 +41,7 @@ void handleDeviceInt(int device_type) {
     if (removed_pcb != NULL) {
         beginIO(dev_num, removed_pcb);  // passing the baton pattern
     } else {
+        g_sysiostates[dev_num].waiting_process = NULL;
         g_sysiostates[dev_num].sem_mut += 1;
     }
 }
@@ -64,6 +65,7 @@ void beginIO(int devnum, pcb_t *process) {
         cmdAddr[i] = cmdValues[i];
     }
     g_soft_block_count++;
+
     sysPasseren(&g_sysiostates[devnum].sem_sync);
 }
 

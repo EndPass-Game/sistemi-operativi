@@ -55,4 +55,8 @@ extern unsigned int g_tod;
 extern state_t *const g_old_state;
 
 extern int g_debug[20];
+
+extern int g_count_sys;
+extern int init_pcb;
+
 #endif  // _NUCLEUS_H_

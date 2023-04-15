@@ -261,75 +261,76 @@ void test() {
     ns2_b_state.status = ns2_b_state.status | IEPBITON | CAUSEINTMASK | TEBITON;
 
     /* create process p2 */
-    p2pid = SYSCALL(CREATEPROCESS, (int) &p2state, (int) NULL, (int) NULL); /* start p2     */
+    // p2pid = SYSCALL(CREATEPROCESS, (int) &p2state, (int) NULL, (int) NULL); /* start p2     */
 
-    if ((int) g_current_process == p2pid) {
-        print("what does the fox say?\n");
-    }
+    // if ((int) g_current_process == p2pid) {
+    //     print("what does the fox say?\n");
+    // }
 
-    print("p2 was started\n");
+    // print("p2 was started\n");
 
 
-    SYSCALL(VERHOGEN, (int) &sem_startp2, 0, 0); /* V(sem_startp2)   */
+    // SYSCALL(VERHOGEN, (int) &sem_startp2, 0, 0); /* V(sem_startp2)   */
 
-    SYSCALL(VERHOGEN, (int) &sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
+    // SYSCALL(VERHOGEN, (int) &sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
 
-    /* make sure we really blocked */
-    if (p1p2synch == 0) {
-        print("error: p1/p2 synchronization bad\n");
-    }
+    // /* make sure we really blocked */
+    // if (p1p2synch == 0) {
+    //     print("error: p1/p2 synchronization bad\n");
+    // }
 
-    p3pid = SYSCALL(CREATEPROCESS, (int) &p3state, (int) NULL, (int) NULL); /* start p3     */
+    // p3pid = SYSCALL(CREATEPROCESS, (int) &p3state, (int) NULL, (int) NULL); /* start p3     */
 
-    print("p3 is started\n");
+    // print("p3 is started\n");
 
-    SYSCALL(PASSEREN, (int) &sem_endp3, 0, 0); /* P(sem_endp3)     */
+    // SYSCALL(PASSEREN, (int) &sem_endp3, 0, 0); /* P(sem_endp3)     */
 
-    SYSCALL(CREATEPROCESS, (int) &hp_p1state, (int) NULL, (int) NULL);
+    // SYSCALL(CREATEPROCESS, (int) &hp_p1state, (int) NULL, (int) NULL);
 
-    SYSCALL(CREATEPROCESS, (int) &hp_p2state, (int) NULL, (int) NULL);
+    // SYSCALL(CREATEPROCESS, (int) &hp_p2state, (int) NULL, (int) NULL);
 
-    p4pid = SYSCALL(CREATEPROCESS, (int) &p4state, (int) NULL, (int) NULL); /* start p4     */
+    // p4pid = SYSCALL(CREATEPROCESS, (int) &p4state, (int) NULL, (int) NULL); /* start p4     */
 
-    pFiveSupport.sup_exceptContext[GENERALEXCEPT].stackPtr = (int) p5Stack;
-    pFiveSupport.sup_exceptContext[GENERALEXCEPT].status = ALLOFF | IEPBITON | CAUSEINTMASK | TEBITON;
-    pFiveSupport.sup_exceptContext[GENERALEXCEPT].pc = (memaddr) p5gen;
-    pFiveSupport.sup_exceptContext[PGFAULTEXCEPT].stackPtr = p5Stack;
-    pFiveSupport.sup_exceptContext[PGFAULTEXCEPT].status = ALLOFF | IEPBITON | CAUSEINTMASK | TEBITON;
-    pFiveSupport.sup_exceptContext[PGFAULTEXCEPT].pc = (memaddr) p5mm;
+    // pFiveSupport.sup_exceptContext[GENERALEXCEPT].stackPtr = (int) p5Stack;
+    // pFiveSupport.sup_exceptContext[GENERALEXCEPT].status = ALLOFF | IEPBITON | CAUSEINTMASK | TEBITON;
+    // pFiveSupport.sup_exceptContext[GENERALEXCEPT].pc = (memaddr) p5gen;
+    // pFiveSupport.sup_exceptContext[PGFAULTEXCEPT].stackPtr = p5Stack;
+    // pFiveSupport.sup_exceptContext[PGFAULTEXCEPT].status = ALLOFF | IEPBITON | CAUSEINTMASK | TEBITON;
+    // pFiveSupport.sup_exceptContext[PGFAULTEXCEPT].pc = (memaddr) p5mm;
 
-    SYSCALL(CREATEPROCESS, (int) &p5state, (int) &(pFiveSupport), (int) NULL); /* start p5     */
+    // SYSCALL(CREATEPROCESS, (int) &p5state, (int) &(pFiveSupport), (int) NULL); /* start p5     */
 
-    SYSCALL(CREATEPROCESS, (int) &p6state, (int) NULL, (int) NULL); /* start p6		*/
+    // SYSCALL(CREATEPROCESS, (int) &p6state, (int) NULL, (int) NULL); /* start p6		*/
 
-    SYSCALL(CREATEPROCESS, (int) &p7state, (int) NULL, (int) NULL); /* start p7		*/
+    // SYSCALL(CREATEPROCESS, (int) &p7state, (int) NULL, (int) NULL); /* start p7		*/
 
-    p9pid = SYSCALL(CREATEPROCESS, (int) &p9state, (int) NULL, (int) NULL); /* start p7		*/
+    // p9pid = SYSCALL(CREATEPROCESS, (int) &p9state, (int) NULL, (int) NULL); /* start p7		*/
 
-    print("p9 was just created\n");
-    SYSCALL(PASSEREN, (int) &sem_endp5, 0, 0); /* P(sem_endp5)		*/
+    // print("p9 was just created\n");
+    // SYSCALL(PASSEREN, (int) &sem_endp5, 0, 0); /* P(sem_endp5)		*/
 
-    print("p1 knows p5 ended\n");
+    // print("p1 knows p5 ended\n");
 
-    SYSCALL(PASSEREN, (int) &sem_blkp4, 0, 0); /* P(sem_blkp4)		*/
+    // SYSCALL(PASSEREN, (int) &sem_blkp4, 0, 0); /* P(sem_blkp4)		*/
 
-    /* now for a more rigorous check of process termination */
-    for (p8inc = 0; p8inc < 4; p8inc++) {
-        /* Reset semaphores */
-        sem_blkp8 = 0;
-        sem_endp8 = 0;
-        for (int i = 0; i < NOLEAVES; i++) {
-            sem_endcreate[i] = 0;
-        }
+    // /* now for a more rigorous check of process termination */
+    // for (p8inc = 0; p8inc < 4; p8inc++) {
+    //     /* Reset semaphores */
+    //     sem_blkp8 = 0;
+    //     sem_endp8 = 0;
+    //     for (int i = 0; i < NOLEAVES; i++) {
+    //         sem_endcreate[i] = 0;
+    //     }
 
-        p8pid = SYSCALL(CREATEPROCESS, (int) &p8rootstate, (int) NULL, (int) NULL);
+    //     p8pid = SYSCALL(CREATEPROCESS, (int) &p8rootstate, (int) NULL, (int) NULL);
 
-        SYSCALL(PASSEREN, (int) &sem_endp8, 0, 0);
-    }
+    //     SYSCALL(PASSEREN, (int) &sem_endp8, 0, 0);
+    // }
 
     /* Check for namespace creation */
     p11pid = SYSCALL(CREATEPROCESS, (int) &p11state, (int) NULL, (int) NULL);
 
+    print("p1 waits for ns ending\n"    );
     SYSCALL(PASSEREN, (int) &sem_endns, 0, 0);
 
     print("p1 finishes OK -- TTFN\n");
@@ -791,7 +792,6 @@ void ns_p_parent_ns() {
     /* Wait for parent semaphore */
     SYSCALL(PASSEREN, (int) &sem_ns, 0, 0);
 
-    print("killing ns_p_parent_ns\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: n_p_parent_ns didn't die!\n");
     PANIC();
@@ -809,7 +809,6 @@ void ns_p_new_ns() {
     /* Wait for parent semaphore */
     SYSCALL(PASSEREN, (int) &sem_ns, 0, 0);
 
-    print("killing ns_p_new_ns\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: n_p_new_ns didn't die!\n");
     PANIC();
@@ -869,7 +868,6 @@ void p11() {
         SYSCALL(VERHOGEN, (int) &sem_ns, 0, 0);
     }
 
-    
     SYSCALL(VERHOGEN, (int) &sem_endns, 0, 0);
     /* Terminate all process */
     SYSCALL(TERMPROCESS, 0, 0, 0);

@@ -21,7 +21,7 @@
  */
 static void terminateProcess(pcb_t *pcb);
 
-
+// int count_sys = 0;
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
         // TODO: simulate program trap, syscall without privilege
@@ -32,7 +32,6 @@ void syscallHandler() {
     unsigned int a1 = g_old_state->reg_a1;
     unsigned int a2 = g_old_state->reg_a2;
     unsigned int a3 = g_old_state->reg_a3;
-
 
     // TODO: decidere se per le syscall è meglio passare funzioni
     // (metodo più clean, ma più lento)
@@ -112,6 +111,7 @@ void sysTerminateProcess(memaddr pid) {
     if (current == NULL) {
         current = g_current_process;
     }
+    outChild(current);
     terminateProcess(current);
     scheduler();
 }
@@ -153,7 +153,6 @@ void sysVerhogen(int *semaddr) {
 int sysDoIO(int *cmdAddr, int *cmdValues) {
     int dev_num = 0;
 
-    // TODO: mettere su epc, t9, e stack per il nuovo frame, dovrebbero bastare queste due
     g_current_process->cmd_addr = cmdAddr;
     g_current_process->cmd_values = cmdValues;
 
@@ -164,15 +163,11 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 }
 
 int sysGetTime(void) {
-    // TODO: verificare se il p_time è gestito dallo status (cosa che non dovrebbe essere)
     // 3.8 pandos dovrebbe avere la risposta su come fare.
     return g_current_process->p_time + getPassedTime();
 }
 
 void sysClockWait(void) {
-    // TODO: the other part is handled in the interrupt
-    //  the interrupt need to mange this semaphore lika a binary sempahore
-    //  **not an ordinary semaphore**
     g_soft_block_count++;
     sysPasseren(&g_pseudo_clock);
 }
@@ -236,20 +231,46 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
 }
 
 static void terminateProcess(pcb_t *pcb) {
-    outChild(pcb);
+    pcb_t *child_pcb = NULL;
+
+    while ((child_pcb = removeChild(pcb)) != NULL) {
+        terminateProcess(child_pcb);
+    }
 
     // Trovare semaforo in cui sono bloccato, e toglierlo.
     // controllare se sono bloccato
     int *blocked_sem = pcb->p_semAdd;
     if (blocked_sem != NULL) {
         pcb_t *removed_pcb = outBlocked(pcb);
+        g_debug[0] = (memaddr) blocked_sem;
         if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] &&
             (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
             if (removed_pcb != NULL) {
-                g_soft_block_count--;
-            }
+                    // TODO:  make this general
+                    g_debug[10] = 1;
+                    if(g_sysiostates[0].waiting_process==pcb) {
+                        g_soft_block_count--;
+                         //g_sysiostates[0].sem_mut=1;  // gestito da interrupt 
+                        g_sysiostates[0].sem_sync = -1;
+                    }
+                }
         }
     }
+
+    g_process_count--;
+    freePcb(pcb);
+
+    return;
+    outChild(pcb);
+
+    
+    // sync dovrebbe restare sempre a 0, però se io ce lo tolto con term process quando
+    // c'è qualcosa di bloccat sopra, quando arriva, l'interrupt questo interrupt fa V
+    // e quindi non vedendo che ci sia bloccato qualcosa, aggiunge 1.  
+
+    // TODO: aggiungi nella doc, abbiamo come invariante che ogni elemento di g_sysio   
+
+    
 
     struct list_head *pos = NULL;
     pcb_t *to_eliminate[MAX_PROC];

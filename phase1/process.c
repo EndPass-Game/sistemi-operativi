@@ -103,6 +103,17 @@ pcb_t *outProcQ(struct list_head *head, pcb_t *process_block) {
     return NULL;
 }
 
+int getQueueLen(struct list_head *head) {
+    int len = 0;
+
+    struct list_head *pos = NULL;
+    list_for_each(pos, head) {
+        len++;
+    }
+
+    return len;
+}
+
 int emptyChild(pcb_t *p) {
     return list_empty(&p->p_child);
 }
