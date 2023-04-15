@@ -21,17 +21,18 @@
  */
 static void terminateProcess(pcb_t *pcb);
 
+
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
         // TODO: simulate program trap, syscall without privilege
         // should this be handled here or other place?
     }
-
     // see 3.5 of pandos.pdf2
     unsigned int syscall_code = g_old_state->reg_a0;
     unsigned int a1 = g_old_state->reg_a1;
     unsigned int a2 = g_old_state->reg_a2;
     unsigned int a3 = g_old_state->reg_a3;
+
 
     // TODO: decidere se per le syscall è meglio passare funzioni
     // (metodo più clean, ma più lento)
@@ -92,7 +93,12 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
     pcb->p_supportStruct = supportp;  // if supportp is null, it's ok
 
     if (ns != NULL) {
-        pcb->namespaces[ns->n_type] = ns;
+        addNamespace(pcb, ns);
+    } else {
+        // copy parent namespaces to curr
+        for (int i = 0; i < NS_TYPE_MAX; i++) {
+            pcb->namespaces[i] = g_current_process->namespaces[i];
+        }
     }
 
     insertProcQ(&g_ready_queue, pcb);
@@ -196,35 +202,37 @@ int sysGetProcessID(int is_parent) {
 
     return 0;
 }
-static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *current_namespace, pcb_t *pcb);
+static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb);
+
 
 int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
-    return getChildsByNamespace(children, &size, current_namespace, g_current_process);
+    
+    int used_size = 0;
+    return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1; 
 }
 
-static int getChildsByNamespace(int *children, int *remaining_size, nsd_t *current_namespace, pcb_t *pcb) {
-    if (getNamespace(pcb, PID_NS) == current_namespace) return 0;
-    if ((*remaining_size) > 0) {
-        *remaining_size -= 1;
-        children[*remaining_size] = (int) pcb;
+static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb) {
+    if (getNamespace(pcb, PID_NS) != current_namespace) return 0;
+    if (*used_size < total_size && pcb != g_current_process) {
+        children[*used_size] = (int) pcb;
+        *used_size += 1;
     }
     int same_namespace_num = 0;
     struct list_head *pos = NULL;
 
     list_for_each(pos, &pcb->p_child) {
         pcb_t *curr_pcb = container_of(pos, pcb_t, p_sib);
-
         same_namespace_num += getChildsByNamespace(
                                   children,
-                                  remaining_size,
+                                  total_size,
+                                  used_size,
                                   current_namespace,
                                   curr_pcb
-                              ) +
-                              1;  // +1 per contare anche child
+                              );
     }
 
-    return same_namespace_num;
+    return same_namespace_num + 1;
 }
 
 static void terminateProcess(pcb_t *pcb) {

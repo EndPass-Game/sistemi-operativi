@@ -784,13 +784,14 @@ void ns_p_parent_ns() {
     print("ns pid in parent namespace\n");
 
     if (ppid == 0) {
-        print("Inconsistent (parent) namespace management\n");
+        print("Inconsistent (parent) namespace management 1\n");
         PANIC();
     }
 
     /* Wait for parent semaphore */
     SYSCALL(PASSEREN, (int) &sem_ns, 0, 0);
 
+    print("killing ns_p_parent_ns\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: n_p_parent_ns didn't die!\n");
     PANIC();
@@ -801,13 +802,14 @@ void ns_p_new_ns() {
     print("ns pid not in parent namespace\n");
 
     if (ppid != 0) {
-        print("Inconsistent (parent) namespace management\n");
+        print("Inconsistent (parent) namespace management 2\n");
         PANIC();
     }
 
     /* Wait for parent semaphore */
     SYSCALL(PASSEREN, (int) &sem_ns, 0, 0);
 
+    print("killing ns_p_new_ns\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: n_p_new_ns didn't die!\n");
     PANIC();
@@ -863,9 +865,11 @@ void p11() {
     }
 
     /* Unlock all children to terminate them */
-    for (i = 0; i < 4; ++i)
+    for (i = 0; i < 4; ++i){
         SYSCALL(VERHOGEN, (int) &sem_ns, 0, 0);
+    }
 
+    
     SYSCALL(VERHOGEN, (int) &sem_endns, 0, 0);
     /* Terminate all process */
     SYSCALL(TERMPROCESS, 0, 0, 0);

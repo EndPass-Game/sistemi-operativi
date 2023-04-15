@@ -6,26 +6,29 @@
 #include "nucleus.h"
 #include "process.h"
 
+unsigned int scheduler_old_status;
 void scheduler() {
-    unsigned int old_status = getSTATUS();
+    scheduler_old_status = getSTATUS();
+
     while (emptyProcQ(&g_ready_queue)) {
         if (g_process_count == 0) {
             HALT();
         } else if (g_process_count > 0 && g_soft_block_count > 0) {
             // set the status register to enable all interrupts
             // disable the Process Local Timer
-            setSTATUS((old_status | STATUS_IEc | STATUS_IM_MASK) & ~STATUS_TE);
+            setSTATUS((scheduler_old_status | STATUS_IEc | STATUS_IM_MASK) & ~STATUS_TE);
             // ci può essere un interrupt subito dopo setStatus che mi mette un processo
             // se succede non vogliamo aspettare, se succede appena dopo faccio
             // il check amen, si aspettera il clock timer interrupt
             if (!emptyProcQ(&g_ready_queue)) break;
             WAIT();
+            setSTATUS(scheduler_old_status & ~STATUS_IEc);
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
             // deadlock found TODO: how to detech deadlocks?
             PANIC();
         }
     }
-    setSTATUS(old_status);
+    setSTATUS(scheduler_old_status);
 
     g_current_process = removeProcQ(&g_ready_queue);
 
