@@ -22,21 +22,21 @@
 static void terminateProcess(pcb_t *pcb);
 
 
+/**
+ * @brief Controlla se l'indirizzo di semaddr è un semaforo mut o sync di un device
+ */
+static bool isDeviceSemaphore(memaddr semaddr);
+
 void syscallHandler() {
     if (g_old_state->status & STATUS_KUc) {
-        // TODO: simulate program trap, syscall without privilege
-        // should this be handled here or other place?
+        // TODO: capire cosa succede se provo a fare una syscall da user mode
+        // a qualcosa accessibile solo da kernel mode
     }
     // see 3.5 of pandos.pdf2
     unsigned int syscall_code = g_old_state->reg_a0;
     unsigned int a1 = g_old_state->reg_a1;
     unsigned int a2 = g_old_state->reg_a2;
     unsigned int a3 = g_old_state->reg_a3;
-
-
-    // TODO: decidere se per le syscall è meglio passare funzioni
-    // (metodo più clean, ma più lento)
-    // oppure direttamente prenderle dalla memoria (più veloce)
 
     unsigned int result = 0;
 
@@ -75,7 +75,7 @@ void syscallHandler() {
             passUpOrDie(GENERALEXCEPT);
             break;
     }
-    // Nelle system call bloccanti questa parte di codice non viene mai eseguita.
+    // NOTA: nelle system call bloccanti (3, 4, 7) questa parte di codice non viene mai eseguita.
 
     // see 7.2.3 pops for return register
     g_old_state->reg_v0 = result;
@@ -153,7 +153,6 @@ void sysVerhogen(int *semaddr) {
 int sysDoIO(int *cmdAddr, int *cmdValues) {
     int dev_num = 0;
 
-    // TODO: mettere su epc, t9, e stack per il nuovo frame, dovrebbero bastare queste due
     g_current_process->cmd_addr = cmdAddr;
     g_current_process->cmd_values = cmdValues;
 
@@ -164,15 +163,11 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 }
 
 int sysGetTime(void) {
-    // TODO: verificare se il p_time è gestito dallo status (cosa che non dovrebbe essere)
     // 3.8 pandos dovrebbe avere la risposta su come fare.
     return g_current_process->p_time + getPassedTime();
 }
 
 void sysClockWait(void) {
-    // TODO: the other part is handled in the interrupt
-    //  the interrupt need to mange this semaphore lika a binary sempahore
-    //  **not an ordinary semaphore**
     g_soft_block_count++;
     sysPasseren(&g_pseudo_clock);
 }
@@ -243,13 +238,18 @@ static void terminateProcess(pcb_t *pcb) {
     int *blocked_sem = pcb->p_semAdd;
     if (blocked_sem != NULL) {
         pcb_t *removed_pcb = outBlocked(pcb);
-        if ((memaddr) blocked_sem >= (memaddr) &g_sysiostates[0] &&
-            (memaddr) blocked_sem < (memaddr) &g_sysiostates[DEVICE_NUMBER]) {
-            if (removed_pcb != NULL) {
+
+        // TODO: trova l'offset corretto per g_sysiostates, a seconda di blocked_sem
+        if (removed_pcb != NULL && isDeviceSemaphore((memaddr) blocked_sem) && 
+            g_sysiostates[0].waiting_process == pcb) {
                 g_soft_block_count--;
-            }
+                g_sysiostates[0].sem_sync = -1;
         }
     }
+
+    // TODO: esiste una implementazione migliore di terminate process
+    // utilizza removeChild, invece di outchild, così non devo storarmi
+    // i figli in un array, chiedere a Angelo per dettagli.
 
     struct list_head *pos = NULL;
     pcb_t *to_eliminate[MAX_PROC];
@@ -268,4 +268,14 @@ static void terminateProcess(pcb_t *pcb) {
 
     g_process_count--;
     freePcb(pcb);
+}
+
+static bool isDeviceSemaphore(memaddr semaddr) {
+    memaddr offsetted = (semaddr - (memaddr) &g_sysiostates[0]) % sizeof(sysiostate_t);
+
+    // Attualmente questa implemententazione è basata fortemente sulla struttura di sysiostate
+    // che ha nelle prime 2 word i due semafori.
+    return offsetted <= 2 * sizeof(int) && 
+        (memaddr) semaddr >= (memaddr) &g_sysiostates[0] &&
+            (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER];
 }

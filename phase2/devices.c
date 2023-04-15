@@ -31,16 +31,20 @@ void handleDeviceInt(int device_type) {
     // TODO: use g_device semaphore resolver
     int dev_num = 0;
 
-    endIO(dev_num);
-    ackDevice(devreg_addr);
+    // see documentation, sync semafore section for -1 meaning
+    if (g_sysiostates[dev_num].sem_sync != -1) {
+        endIO(dev_num);
+        g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
+    }
 
-    g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
+    ackDevice(devreg_addr);
     sysVerhogen(&g_sysiostates[dev_num].sem_sync);
 
     pcb_t *removed_pcb = removeBlocked(&g_sysiostates[dev_num].sem_mut);
     if (removed_pcb != NULL) {
         beginIO(dev_num, removed_pcb);  // passing the baton pattern
     } else {
+        g_sysiostates[dev_num].waiting_process = NULL;
         g_sysiostates[dev_num].sem_mut += 1;
     }
 }
