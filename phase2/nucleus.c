@@ -28,6 +28,8 @@ int g_debug[20];
 unsigned int g_tod;
 state_t *const g_old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
+int g_p8 = false;
+
 extern void test();
 extern void uTLB_RefillHandler();
 

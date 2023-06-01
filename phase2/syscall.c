@@ -103,6 +103,12 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
     insertProcQ(&g_ready_queue, pcb);
     insertChild(g_current_process, pcb);
     // p_time and p_semadd are null/0 initialized by allocPcb.
+
+    if (g_p8) {
+        g_debug[5] = (int) g_current_process;
+        g_debug[6] = (int) pcb;
+    }
+
     return (memaddr) pcb;
 }
 
@@ -188,6 +194,12 @@ int sysGetProcessID(int is_parent) {
         return 0;
     }
 
+    if (g_p8) {
+        g_debug[2] = (int) parent_pcb;
+        g_debug[3] = (int) g_current_process;
+        g_debug[4] = 0x10000000 + is_parent;
+    }
+
     if (!is_parent) {
         return (int) g_current_process;
     } else {
@@ -196,6 +208,7 @@ int sysGetProcessID(int is_parent) {
 
     return 0;
 }
+
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb);
 
 int sysGetChildren(int *children, int size) {

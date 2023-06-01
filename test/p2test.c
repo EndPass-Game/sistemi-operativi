@@ -1,3 +1,4 @@
+
 /* File: $Id: p2test.c,v 1.1 1998/01/20 09:28:08 morsiani Exp morsiani $ */
 
 /*********************************P2TEST.C*******************************
@@ -20,6 +21,7 @@
 #include <pandos_types.h>
 #include <ns.h>
 #include <umps/libumps.h>
+#include <nucleus.h>
 
 typedef unsigned int devregtr;
 
@@ -333,9 +335,11 @@ void test() {
 
         SYSCALL(PASSEREN, (int)&sem_endp8, 0, 0);
     }
-
-    SYSCALL(PASSEREN, (int)&sem_endp4, 0, 0);
-
+    print("p8 has finished\n");
+    // g_debug[19] = 0x1000 + sem_endp4;
+    // SYSCALL(PASSEREN, (int)&sem_endp4, 0, 0);
+    print("p1 knows p4 ended\n");
+    print("beginning p11\n");
     SYSCALL(CREATEPROCESS, (int)&p11state, (int)NULL, (int)NULL); /* start p7		*/
     SYSCALL(PASSEREN, (int)&sem_p11, 0, 0);
 
@@ -492,7 +496,7 @@ void p4() {
     p4pid = SYSCALL(CREATEPROCESS, (int)&p4state, (int)NULL, 0); /* start a new p4    */
 
     SYSCALL(PASSEREN, (int)&sem_synp4, 0, 0); /* wait for it       */
-
+    print("p4 child gave verhogen\n");
     SYSCALL(VERHOGEN, (int)&sem_endp4, 0, 0); /* V(sem_endp4)          */
 
     print("p4 incarnation terminating\n");
@@ -598,9 +602,8 @@ void p5a() {
 void p5b() {
     cpu_t time1, time2;
 
-    SYSCALL(1, 0, 0, 0);
+    SYSCALL(11, 0, 0, 0);
     SYSCALL(PASSEREN, (int)&sem_endp4, 0, 0); /* P(sem_endp4)*/
-
     /* do some delay to be reasonably sure p4 and its offspring are dead */
     time1 = 0;
     time2 = 0;
@@ -618,7 +621,7 @@ void p5b() {
     /* should cause a termination       */
     /* since this has already been      */
     /* done for PROGTRAPs               */
-
+    print("p5 terminating\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
 
     /* should have terminated, so should not get to this point */
@@ -657,6 +660,7 @@ void p8root() {
     int grandchild = 0;
 
     print("p8root starts\n");
+    g_p8 = true;
     SYSCALL(CREATEPROCESS, (int)&child1state, (int)NULL, (int)NULL);
 
     SYSCALL(CREATEPROCESS, (int)&child2state, (int)NULL, (int)NULL);
@@ -666,6 +670,7 @@ void p8root() {
     }
 
     SYSCALL(VERHOGEN, (int)&sem_endp8, 0, 0);
+    // print("123456789 terminates\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
 }
 
@@ -675,6 +680,8 @@ void child1() {
     print("child1 starts\n");
 
     int ppid = SYSCALL(GETPROCESSID, 1, 0, 0);
+    g_debug[0] = ppid;
+    g_debug[1] = p8pid;
     if (ppid != p8pid) {
         print("Inconsistent (parent) process id for p8's first child\n");
         PANIC();
@@ -692,7 +699,7 @@ void child2() {
 
     int ppid = SYSCALL(GETPROCESSID, 1, 0, 0);
     if (ppid != p8pid) {
-        print("Inconsistent (parent) process id for p8's first child\n");
+        print("Inconsistent (parent) process id for p8's second child\n");
         PANIC();
     }
 
@@ -749,6 +756,7 @@ void p10() {
         PANIC();
     }
 
+    print("p10 is calling term\n");
     SYSCALL(TERMPROCESS, ppid, 0, 0);
 
     print("Error: p10 didn't die with its parent!\n");
@@ -759,6 +767,7 @@ void p10() {
 void hp_p1() {
     print("hp_p1 starts\n");
 
+    print("killing hp_p1\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: hp_p1 didn't die!\n");
     PANIC();
@@ -772,6 +781,7 @@ void hp_p2() {
         SYSCALL(CLOCKWAIT, 0, 0, 0);
     }
 
+    print("killing hp_p2\n");
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: hp_p2 didn't die!\n");
     PANIC();
