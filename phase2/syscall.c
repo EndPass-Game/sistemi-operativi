@@ -150,7 +150,7 @@ void sysVerhogen(int *semaddr) {
 }
 
 int sysDoIO(int *cmdAddr, int *cmdValues) {
-    int dev_num = 0;
+    int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
 
     g_current_process->cmd_addr = cmdAddr;
     g_current_process->cmd_values = cmdValues;
@@ -162,7 +162,10 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
 }
 
 int sysGetTime(void) {
-    // 3.8 pandos dovrebbe avere la risposta su come fare.
+    // TODO: vedere se il commento seguente è corretto
+    // p_time è 0 quando il processo è allocato, poi viene aggiornato quando il processo
+    // viene per esempio interrotto da interrupt, quindi voglio contare il tempo prima di interrupt
+    // e il passaggio di tempo da quando è stato ripreso
     return g_current_process->p_time + getPassedTime();
 }
 
@@ -195,6 +198,7 @@ int sysGetProcessID(int is_parent) {
 
     return 0;
 }
+
 static int getChildsByNamespace(int *children, const int total_size, int *used_size, const nsd_t *current_namespace, pcb_t *pcb);
 
 int sysGetChildren(int *children, int size) {
@@ -236,11 +240,11 @@ static void terminateProcess(pcb_t *pcb) {
     if (blocked_sem != NULL) {
         pcb_t *removed_pcb = outBlocked(pcb);
 
-        // TODO: trova l'offset corretto per g_sysiostates, a seconda di blocked_sem
+        int semnum = resolveSemAddr((memaddr) blocked_sem);
         if (removed_pcb != NULL && isDeviceSemaphore((memaddr) blocked_sem) &&
-            g_sysiostates[0].waiting_process == pcb) {
+            g_sysiostates[semnum].waiting_process == pcb) {
             g_soft_block_count--;
-            g_sysiostates[0].sem_sync = -1;
+            g_sysiostates[semnum].sem_sync = -1;
         }
     }
 

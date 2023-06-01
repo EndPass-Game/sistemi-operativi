@@ -22,9 +22,8 @@ void scheduler() {
             // il check amen, si aspettera il clock timer interrupt
             if (!emptyProcQ(&g_ready_queue)) break;
             WAIT();
-            setSTATUS(scheduler_old_status & ~STATUS_IEc);
+            setSTATUS(scheduler_old_status);
         } else if (g_process_count > 0 && g_soft_block_count == 0) {
-            // deadlock found TODO: how to detech deadlocks?
             PANIC();
         }
     }
@@ -34,6 +33,4 @@ void scheduler() {
 
     setTIMER(TIMESLICE);
     LDST(&g_current_process->p_s);
-    // TODO: capisci come deallocare e decrementare quando
-    // un processo finisce
 }

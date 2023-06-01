@@ -16,20 +16,24 @@ int resolveDeviceAddress(memaddr memaddress) {
 
     if (memaddress < DEVREG_START_ADDR)
         return -1;  // non c'è nessun device associato
-    else if (memaddress < DEVREG_END_ADDR)
+    else if (memaddress < TERMREG_END_ADDR)  // sia device sia reg
         return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
-    else if (memaddress < TERMREG_END_ADDR)
-        return (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2) + 32;  // 32 è il numero dei device non term
     else
         return -1;  // nessun device oltre a quello
+}
+
+int resolveSemAddr(memaddr semaddr) {
+    if ((memaddr) semaddr >= (memaddr) &g_sysiostates[0] && (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER])
+        return (semaddr - (memaddr) &g_sysiostates[0]) / sizeof(sysiostate_t);
+    else 
+        return -1;
 }
 
 void handleDeviceInt(int device_type) {
     devreg *devreg_addr = findDevRegAddr(device_type);
     if (devreg_addr == NULL) return;  // This should never happen
 
-    // TODO: use g_device semaphore resolver
-    int dev_num = 0;
+    int dev_num = resolveDeviceAddress((memaddr) devreg_addr);
 
     // see documentation, sync semafore section for -1 meaning
     if (g_sysiostates[dev_num].sem_sync != -1) {
@@ -98,7 +102,6 @@ static devreg *findDevRegAddr(int device_type) {
 }
 
 static void ackDevice(devreg *devreg_addr) {
-    // TODO: check if device has error, if error the procedure should return -1.
     if ((memaddr) devreg_addr >= DEVREG_START_ADDR && (memaddr) devreg_addr < DEVREG_END_ADDR) {
         devreg *commandp = (devreg *) (devreg_addr + 1);
         *commandp = ACK;
