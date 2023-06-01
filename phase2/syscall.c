@@ -184,13 +184,12 @@ int sysGetProcessID(int is_parent) {
     }
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
 
-    if (parent_namespace != current_namespace) {
-        return 0;
-    }
-
     if (!is_parent) {
         return (int) g_current_process;
     } else {
+        if (parent_namespace != current_namespace) {
+            return 0;
+        }
         return (int) parent_pcb;
     }
 
