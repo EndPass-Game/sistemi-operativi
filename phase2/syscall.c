@@ -27,10 +27,6 @@ static void terminateProcess(pcb_t *pcb);
 static bool isDeviceSemaphore(memaddr semaddr);
 
 void syscallHandler() {
-    if (g_old_state->status & STATUS_KUc) {
-        // TODO: capire cosa succede se provo a fare una syscall da user mode
-        // a qualcosa accessibile solo da kernel mode
-    }
     // see 3.5 of pandos.pdf2
     unsigned int syscall_code = g_old_state->reg_a0;
     unsigned int a1 = g_old_state->reg_a1;
@@ -111,6 +107,8 @@ void sysTerminateProcess(memaddr pid) {
     if (current == NULL) {
         current = g_current_process;
     }
+
+    outChild(current);
     terminateProcess(current);
     scheduler();
 }
@@ -152,17 +150,20 @@ void sysVerhogen(int *semaddr) {
 int sysDoIO(int *cmdAddr, int *cmdValues) {
     int dev_num = resolveDeviceAddress((memaddr) cmdAddr);
 
+    // vuol dire che il chiamante ha messo un valore invalido di cmdAddr (che non è un device)
+    if (dev_num == -1)
+        PANIC();
+    //TODO: magari il panic non è il miglior modo per gestire questa cosa
+
     g_current_process->cmd_addr = cmdAddr;
     g_current_process->cmd_values = cmdValues;
 
     sysPasseren(&g_sysiostates[dev_num].sem_mut);
     beginIO(dev_num, g_current_process);
-    endIO(dev_num);
     return 0;
 }
 
 int sysGetTime(void) {
-    // TODO: vedere se il commento seguente è corretto
     // p_time è 0 quando il processo è allocato, poi viene aggiornato quando il processo
     // viene per esempio interrotto da interrupt, quindi voglio contare il tempo prima di interrupt
     // e il passaggio di tempo da quando è stato ripreso
@@ -232,8 +233,6 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
 }
 
 static void terminateProcess(pcb_t *pcb) {
-    outChild(pcb);
-
     // Trovare semaforo in cui sono bloccato, e toglierlo.
     // controllare se sono bloccato
     int *blocked_sem = pcb->p_semAdd;
@@ -248,27 +247,16 @@ static void terminateProcess(pcb_t *pcb) {
         }
     }
 
-    // TODO: esiste una implementazione migliore di terminate process
-    // utilizza removeChild, invece di outchild, così non devo storarmi
-    // i figli in un array, chiedere a Angelo per dettagli.
+    pcb_t *child_pcb = NULL;
 
-    struct list_head *pos = NULL;
-    pcb_t *to_eliminate[MAX_PROC];
-    int to_eliminate_size = 0;
-    list_for_each(pos, &pcb->p_child) {
-        pcb_t *child_proc = container_of(pos, pcb_t, p_sib);
-        to_eliminate[to_eliminate_size] = child_proc;
-        to_eliminate_size++;
-    }
-
-    // non mettere terminate process dentro al list for each,
-    // non possiamo modificare la lista mentre la iteriamo.
-    for (int i = 0; i < to_eliminate_size; i++) {
-        terminateProcess(to_eliminate[i]);
+    while ((child_pcb = removeChild(pcb)) != NULL) {
+        terminateProcess(child_pcb);
     }
 
     g_process_count--;
     freePcb(pcb);
+
+    return;
 }
 
 static bool isDeviceSemaphore(memaddr semaddr) {

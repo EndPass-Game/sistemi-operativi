@@ -184,7 +184,7 @@
 
 /* CUSTOM CONSTS */
 
-#define DEVICE_NUMBER 40  // number of devices installed in umps3
+#define DEVICE_NUMBER 50  // number of devices installed in umps3
 #define DEVICESTATUSMASK 0xFF
 #define DEVREG_START_ADDR 0x10000054
 #define DEVREG_END_ADDR 0x10000254

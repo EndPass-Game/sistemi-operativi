@@ -22,6 +22,49 @@ int resolveDeviceAddress(memaddr memaddress) {
         return -1;  // nessun device oltre a quello
 }
 
+// int resolveDeviceAddress(memaddr memaddress) {
+//     // 0x1000054 è il base del device normale
+
+//     // 0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
+//     // invece che 1
+
+//     if (memaddress < DEVREG_START_ADDR)
+//         return -1;  // non c'è nessun device associato
+//     else if(memaddress>=DEVREG_START_ADDR &&  memaddress<TERMREG_START_ADDR){
+//         return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+//     else if (memaddress >= TERMREG_START_ADDR && memaddress < TERMREG_END_ADDR) 
+//         return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+    
+
+//     else if (memaddress < TERMREG_END_ADDR)  // sia device sia reg
+//         return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+//     else
+//         return -1;  // nessun device oltre a quello
+// }
+
+
+
+int _resolveDeviceAddress(memaddr memaddress) {
+    // 0x1000054 è il base del device normale
+
+    // 0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
+    // invece che 1
+
+    if (memaddress < DEVREG_START_ADDR)
+        return -1;  // non c'è nessun device associato
+
+    else if(memaddress >= DEVREG_START_ADDR &&  memaddress < TERMREG_START_ADDR)
+        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+
+    else if (memaddress >= TERMREG_START_ADDR && memaddress < TERMREG_END_ADDR) 
+        return (TERMREG_START_ADDR - DEVREG_START_ADDR) / DEVREGSIZE + (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE/2);  // dividiamo per lunghezza del registro ma diviso 2, quindi 8
+        
+    else
+        return -1;  // nessun device oltre a quello
+}
+
+
+
 int resolveSemAddr(memaddr semaddr) {
     if ((memaddr) semaddr >= (memaddr) &g_sysiostates[0] && (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER])
         return (semaddr - (memaddr) &g_sysiostates[0]) / sizeof(sysiostate_t);
@@ -36,6 +79,7 @@ void handleDeviceInt(int device_type) {
     int dev_num = resolveDeviceAddress((memaddr) devreg_addr);
 
     // see documentation, sync semafore section for -1 meaning
+    // tl;dr: -1 process killed before I
     if (g_sysiostates[dev_num].sem_sync != -1) {
         endIO(dev_num);
         g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;

@@ -69,18 +69,26 @@ Se non ho nessun processo che sta runnando allora lo metto a NULL, altrimenti pu
 
 Ogni device contiene un proprio semaforo di sincronizzazione inizializzato a 0, un semaforo di mutex inizializzato a 1 e un pointer al pcb correntemente bloccato su IO (se sono bloccato su mutex non sono considerato bloccato in IO), quindi esiste al massimo un singolo processo in IO. Se non c'è nessun processo io IO questo pcb è vuoto.
 
-Nel caso in cui si faccia una Operazione di input output su un device già impegnato, questo processo sarà bloccato su un semaforo di mutex per il device.
+Nel caso in cui si faccia un'operazione di input output su un device già impegnato, questo processo sarà bloccato su un semaforo di mutex per il device.
 
 **INVARIANTE**: Quando un processo viene bloccato durante una operazione di input/output sui semafori di mutex oppure di sync, avrà come stato lo stato di BIOS_DATA_PAGE in modo che quando riprenderà l'esecuzione sarà già fuori dalla syscall. Si utilizza un sistema di passing the baton per riattivare un possibile secondo processo bloccato sulla mutex del device. 
 *ATTENZIONE*: Non bisogna terminare un processo bloccato su un mutex esterno perché il kernel non ha (attualmente, v2) funzionalità per controllare questo blocco.
+Ad esempio nel p8 se provo a printare in un figlio, ma questo viene eliminato, mantenendo comunque la mutex del print, questo sicuramente darà un PANIC perché un processo è stato ucciso mentre printava.
 
 Quando viene issued una syscall di DOIO, questo viene sempre fermato nel semaforo di sincronizzazione, sarà riattivato solo quando ci sarà l'interrupt del device. Allora in questo momento sarà rimesso sulla coda di ready.
 Per esperienza questo avviene molto presto, solitamente non appena finisce la LDST dello scheduler oppure non appena setto la mask prima di chiamare wait, ma per altri devices può essere diverso.
 
 ### SYNC SEMAPHORE
 
-Talvolta può succedere che il semaforo sync del device sia stato settato a -1.
+Talvolta può succedere che il semaforo sync chiamato `sem_sync` del device sia stato settato a -1.
 Questo avviene solo ed esclusivamente quanso un processo che ha richiesto una IO è stato terminato prima che l'IO venga finita. Allora quando arriva l'interrupt io devo solamente fare acknowledge, non devo eseguire le procedure di ritorno come endIO o salvare il registro di fine.
+
+Viene scelto -1 come valore perché in questo modo quando avrò la passeren nel device interrupt, avverrà che sarà rimesso a 0, quindi 
+tornerà ad essere una specie di mutex con il solo scopo di sincronizzare l'inizio e la fine delle operazioni sul device, una volta inizializzati.
+
+### Mutex semaphore
+
+Questo semaforo 
 
 ## Timer
 

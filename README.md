@@ -13,8 +13,8 @@ La documentazione si trova nel file [DOCUMENTATION.md](DOCUMENTATION.md)
 
 ## How to run
 - Just compile the project running `make`
-  - This command will call `cmake` and output in the build directory
+  - This command will call `cmake` and output in the `build` directory
 - In the build directory with file names needed in order to run it:
-  - `phase1.kernel.elf.core.umps`
-  - `phase1.kernel.elf.stab.umps`
+  - `phase2.kernel.elf.core.umps`
+  - `phase2.kernel.elf.stab.umps`
 
