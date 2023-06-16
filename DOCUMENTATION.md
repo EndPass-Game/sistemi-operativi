@@ -78,17 +78,17 @@ Ad esempio nel p8 se provo a printare in un figlio, ma questo viene eliminato, m
 Quando viene issued una syscall di DOIO, questo viene sempre fermato nel semaforo di sincronizzazione, sarà riattivato solo quando ci sarà l'interrupt del device. Allora in questo momento sarà rimesso sulla coda di ready.
 Per esperienza questo avviene molto presto, solitamente non appena finisce la LDST dello scheduler oppure non appena setto la mask prima di chiamare wait, ma per altri devices può essere diverso.
 
-### SYNC SEMAPHORE
+### Sync Semaphore
 
-Talvolta può succedere che il semaforo sync chiamato `sem_sync` del device sia stato settato a -1.
-Questo avviene solo ed esclusivamente quanso un processo che ha richiesto una IO è stato terminato prima che l'IO venga finita. Allora quando arriva l'interrupt io devo solamente fare acknowledge, non devo eseguire le procedure di ritorno come endIO o salvare il registro di fine.
+Talvolta può succedere che il semaforo sync chiamato `sem_sync` del device e sia stato settato a -1.
+Questo avviene solo ed esclusivamente quandso un processo che ha richiesto una I/O è stato terminato prima che l'I/O venga finita. Allora quando arriva l'interrupt io devo solamente fare l'acknowledgement, non devo eseguire le procedure di ritorno come endIO o salvare il registro di fine.
 
 Viene scelto -1 come valore perché in questo modo quando avrò la passeren nel device interrupt, avverrà che sarà rimesso a 0, quindi 
-tornerà ad essere una specie di mutex con il solo scopo di sincronizzare l'inizio e la fine delle operazioni sul device, una volta inizializzati.
+tornerà ad essere una specie di mutex con il solo scopo di sincronizzare l'inizio e la fine delle operazioni sul device, quando inizializzati.
 
 ### Mutex semaphore
 
-Questo semaforo 
+Questo semaforo è un semaforo
 
 ## Timer
 
