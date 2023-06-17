@@ -57,15 +57,32 @@ In particolare potremmo dire che un processo che sia fermo sulla lista dei semaf
 
 # Phase 2
 
-## PID
+## Introduzione generale
+
+La fase due introduce le astrazioni come scheduler, syscalls, gestione di eccezioni.
+
+L'organizzazione proposta è divisa in 5 files presenti sotto la directory 
+- `syscall.c`, in cui sono implementate tutte le syscall e il syscall handler
+- `scheduler.c`, in cui è presente lo scheduler
+- `nucleus.c`, in cui sono gestite le operazioni di inizializzazione.
+- `exceptions.c`, in cui sono gestiti i timer e le funzioni che demultiplexano le eccezioni.
+- `devices.c`, in cui sono gestiti interrupt e risoluzione di device con i propri semafori.
+
+Nei file headers sono presenti documentazione per tutte le funzioni non locali.
+
+## Processi
+
+### PID
 
 Abbiamo deciso di utilizzare i pointers ai `pcb_t` come i PID del programma.
 
-## Global process
+### Global process
 
 Se non ho nessun processo che sta runnando allora lo metto a NULL, altrimenti punta al processo corrente che sta eseguendo.
 
 ## Sincronizzazione Devices
+
+Viene utilizzata la struttura `sysiostate` dichiarata in `pandos_types.h`
 
 Ogni device contiene un proprio semaforo di sincronizzazione inizializzato a 0, un semaforo di mutex inizializzato a 1 e un pointer al pcb correntemente bloccato su IO (se sono bloccato su mutex non sono considerato bloccato in IO), quindi esiste al massimo un singolo processo in IO. Se non c'è nessun processo io IO questo pcb è vuoto.
 
@@ -90,12 +107,16 @@ tornerà ad essere una specie di mutex con il solo scopo di sincronizzare l'iniz
 
 Questo semaforo arbitra l'accesso al device, in modo che un singolo processo alla volta possa scrivere il suo comando nel registro del device. Quando il processo che ha la mutex finisce, riattiverà i processi bloccati su questo semaforo con un pattern "pass the baton".
 
-## Timer
-
+## Altre note generali
+### Timer
+`
 Abbiamo deciso di far pagare il tempo delle syscalls ai processi, mentre gli interrupt non sono pagati, dato che è tempo utilizzato per tutti i processi.
-Anche durante lo scheduler, mettiamo uno `STCK` per non fare contare il tempo dello scheduler o funzioni precedenti, in modo che quando il processo è caricato è come se avesse il global timer 0.
+Anche durante lo scheduler, mettiamo uno `STCK` per non fare contare il tempo dello scheduler o funzioni precedenti, in modo che quando il processo è caricato è come se cominciasse a contare da 0.
 
-## GetChildByNamespace
+### GetChildByNamespace
 
 Nel conteggio dei figli di un namespace vengono contati tutti i figli nell'intero albero dei processi sottostanti al processo corrente.
 
+### Commento sul p5
+
+Può apparire strano che in `p5mm` appena chiamiamo `p5b` in user mode abbiamo un errore `ADEL`, che ci riporta su `p5gen` dato che è gestito come generalexcept. Questo è sensato perché la stack di p5b ha un indirizzo minore di 0x8000.0000, leggiamo da umps3 pg13 che tali accessi generano un eccezione adel.

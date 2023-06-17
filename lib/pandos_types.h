@@ -66,8 +66,6 @@ typedef struct pcb_t {
 
 }   pcb_t, *pcb_PTR;
 
-
-
 /* semaphore descriptor (SEMD) data structure */
 typedef struct semd_t {
     /* Semaphore key */
