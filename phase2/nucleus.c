@@ -24,7 +24,6 @@ struct list_head g_ready_queue;
 pcb_t *g_current_process;
 sysiostate_t g_sysiostates[DEVICE_NUMBER];
 int g_pseudo_clock;
-int g_debug[20];
 unsigned int g_tod;
 state_t *const g_old_state = (state_t *) BIOS_DATA_PAGE_BASE;
 
@@ -88,6 +87,4 @@ static void initSysIOState(int dev_num) {
     g_sysiostates[dev_num].sem_mut = 1;
     g_sysiostates[dev_num].sem_sync = 0;
     g_sysiostates[dev_num].waiting_process = NULL;
-    // g_sysiostates[dev_num].cmd_addr = NULL;
-    // g_sysiostates[dev_num].cmd_values = NULL;
 }

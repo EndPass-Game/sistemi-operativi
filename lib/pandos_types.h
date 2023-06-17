@@ -93,7 +93,7 @@ typedef struct termdev {
 typedef struct sysiostate {
     int sem_mut;  // semaphore for mutual exclusion
     int sem_sync;  // semaphore for synchronization
-    pcb_t* waiting_process; // only one process is waiting for a device at a time
+    pcb_t* waiting_process; // only one process is waiting for a device at a time, it's the process that has already issued an IO
 } sysiostate_t;
 
 

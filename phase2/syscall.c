@@ -23,11 +23,13 @@ static void terminateProcess(pcb_t *pcb);
 
 /**
  * @brief Controlla se l'indirizzo di semaddr è un semaforo mut o sync di un device
+ * 
+ * @param semaddr
  */
 static bool isDeviceSemaphore(memaddr semaddr);
 
 void syscallHandler() {
-    // see 3.5 of pandos.pdf2
+    // see 3.5 of pandos.pdf
     unsigned int syscall_code = g_old_state->reg_a0;
     unsigned int a1 = g_old_state->reg_a1;
     unsigned int a2 = g_old_state->reg_a2;
@@ -70,7 +72,8 @@ void syscallHandler() {
             passUpOrDie(GENERALEXCEPT);
             break;
     }
-    // NOTA: nelle system call bloccanti (3, 4, 7) questa parte di codice non viene mai eseguita.
+    // NOTA: nelle system call bloccanti (3, 4, 7) questa parte di codice non viene (quasi) mai eseguita:
+    // 3, 4 potrebbero ritornare 0 (default) nel caso in cui non siano stati bloccati.
 
     // see 7.2.3 pops for return register
     g_old_state->reg_v0 = result;
@@ -85,7 +88,7 @@ memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns) {
     }
     g_process_count++;
     memcpy((void *) &pcb->p_s, (void *) statep, sizeof(state_t));
-    pcb->p_supportStruct = supportp;  // if supportp is null, it's ok
+    pcb->p_supportStruct = supportp;  // if supportp is null, it's ok, works anyway.
 
     if (ns != NULL) {
         addNamespace(pcb, ns);
@@ -153,7 +156,6 @@ int sysDoIO(int *cmdAddr, int *cmdValues) {
     // vuol dire che il chiamante ha messo un valore invalido di cmdAddr (che non è un device)
     if (dev_num == -1)
         PANIC();
-    //TODO: magari il panic non è il miglior modo per gestire questa cosa
 
     g_current_process->cmd_addr = cmdAddr;
     g_current_process->cmd_values = cmdValues;
@@ -206,6 +208,7 @@ int sysGetChildren(int *children, int size) {
     nsd_t *current_namespace = getNamespace(g_current_process, PID_NS);
 
     int used_size = 0;
+    // -1 because we don't want to count the current process
     return getChildsByNamespace(children, size, &used_size, current_namespace, g_current_process) - 1;
 }
 
@@ -229,12 +232,12 @@ static int getChildsByNamespace(int *children, const int total_size, int *used_s
         );
     }
 
+    // +1 because we want to count the current process
     return same_namespace_num + 1;
 }
 
 static void terminateProcess(pcb_t *pcb) {
-    // Trovare semaforo in cui sono bloccato, e toglierlo.
-    // controllare se sono bloccato
+    // nel caso in cui sono bloccato su un semaforo, devo togliere il processo dalla coda di quel semaforo
     int *blocked_sem = pcb->p_semAdd;
     if (blocked_sem != NULL) {
         pcb_t *removed_pcb = outBlocked(pcb);
@@ -255,8 +258,6 @@ static void terminateProcess(pcb_t *pcb) {
 
     g_process_count--;
     freePcb(pcb);
-
-    return;
 }
 
 static bool isDeviceSemaphore(memaddr semaddr) {

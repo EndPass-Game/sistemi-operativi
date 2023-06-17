@@ -22,7 +22,7 @@ void exceptionHandler() {
 
     switch (cause_bits) {
         case EXC_INT:
-            updateProcessTime();  // don't charge interrupt to the current process!
+            updateProcessTime();  // don't charge time count of the interrupt to the current process!
             interruptHandler();
             break;
         case EXC_MOD:
@@ -114,16 +114,12 @@ static void handleSysTimer() {
 }
 
 static void handleLocalTimer() {
-    setTIMER(TIMESLICE);
     memcpy((void *) &g_current_process->p_s, (void *) g_old_state, sizeof(state_t));
     insertProcQ(&g_ready_queue, g_current_process);
     g_current_process = NULL;
     scheduler();
 }
 
-/**
- * @brief La seguente è una proposta di risoluzione degli address dei device in indici:
- */
 unsigned int getPassedTime() {
     unsigned int tod;
     STCK(tod);

@@ -1,4 +1,4 @@
-# Scelte progettuali
+# Phase 1
 
 ## La struttura del progetto
 
@@ -59,13 +59,13 @@ In particolare potremmo dire che un processo che sia fermo sulla lista dei semaf
 
 ## PID
 
-Abbiamo deciso di utilizzare i pointers ai `pcb_t` come i PID del programma
+Abbiamo deciso di utilizzare i pointers ai `pcb_t` come i PID del programma.
 
 ## Global process
 
 Se non ho nessun processo che sta runnando allora lo metto a NULL, altrimenti punta al processo corrente che sta eseguendo.
 
-## Sincronizzazione devices
+## Sincronizzazione Devices
 
 Ogni device contiene un proprio semaforo di sincronizzazione inizializzato a 0, un semaforo di mutex inizializzato a 1 e un pointer al pcb correntemente bloccato su IO (se sono bloccato su mutex non sono considerato bloccato in IO), quindi esiste al massimo un singolo processo in IO. Se non c'è nessun processo io IO questo pcb è vuoto.
 
@@ -86,10 +86,16 @@ Questo avviene solo ed esclusivamente quandso un processo che ha richiesto una I
 Viene scelto -1 come valore perché in questo modo quando avrò la passeren nel device interrupt, avverrà che sarà rimesso a 0, quindi 
 tornerà ad essere una specie di mutex con il solo scopo di sincronizzare l'inizio e la fine delle operazioni sul device, quando inizializzati.
 
-### Mutex semaphore
+### Mutex Semaphore
 
-Questo semaforo è un semaforo
+Questo semaforo arbitra l'accesso al device, in modo che un singolo processo alla volta possa scrivere il suo comando nel registro del device. Quando il processo che ha la mutex finisce, riattiverà i processi bloccati su questo semaforo con un pattern "pass the baton".
 
 ## Timer
 
-Abbiamo deciso di far pagare il tempo delle syscalls ai processi, mentre gli interrupt non sono pagati, dato che è tempo utilizzato per tutti i processi
+Abbiamo deciso di far pagare il tempo delle syscalls ai processi, mentre gli interrupt non sono pagati, dato che è tempo utilizzato per tutti i processi.
+Anche durante lo scheduler, mettiamo uno `STCK` per non fare contare il tempo dello scheduler o funzioni precedenti, in modo che quando il processo è caricato è come se avesse il global timer 0.
+
+## GetChildByNamespace
+
+Nel conteggio dei figli di un namespace vengono contati tutti i figli nell'intero albero dei processi sottostanti al processo corrente.
+

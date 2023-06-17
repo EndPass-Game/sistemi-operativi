@@ -18,8 +18,9 @@ void scheduler() {
             // disable the Process Local Timer
             setSTATUS((scheduler_old_status | STATUS_IEc | STATUS_IM_MASK) & ~STATUS_TE);
             // ci può essere un interrupt subito dopo setStatus che mi mette un processo
-            // se succede non vogliamo aspettare, se succede appena dopo faccio
-            // il check amen, si aspettera il clock timer interrupt
+            // se succede non vogliamo aspettare. 
+            // potrebbe anche succedere appena faccio il check, 
+            // in quel caso si aspettera' il global clock timer interrupt
             if (!emptyProcQ(&g_ready_queue)) break;
             WAIT();
             setSTATUS(scheduler_old_status);
@@ -32,5 +33,6 @@ void scheduler() {
     g_current_process = removeProcQ(&g_ready_queue);
 
     setTIMER(TIMESLICE);
+    STCK(g_tod);  // tempo dello scheduler non è contato al processo così.
     LDST(&g_current_process->p_s);
 }

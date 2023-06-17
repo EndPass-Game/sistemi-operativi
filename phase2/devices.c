@@ -11,17 +11,16 @@ static inline bool isTermReg(memaddr addr);
 
 int resolveDeviceAddress(memaddr memaddress) {
     // 0x1000054 è il base del device normale
-
     // 0x10000254 questo è il primo indirizzo di termdevice, da qui in poi ho bisogno di due semafori
     // invece che 1
 
     if (memaddress < DEVREG_START_ADDR)
         return -1;  // non c'è nessun device associato
     else if(memaddress >= DEVREG_START_ADDR &&  memaddress < TERMREG_START_ADDR)
-        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;  // dividiamo per lunghezza del registro ossia 16
+        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE; 
     else if (memaddress >= TERMREG_START_ADDR && memaddress < TERMREG_END_ADDR) 
         return (TERMREG_START_ADDR - DEVREG_START_ADDR) / DEVREGSIZE + 
-        (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE/2);  // dividiamo per lunghezza del registro ma diviso 2, quindi 8
+            (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE/2);
     else
         return -1;  // nessun device oltre a quello
 }
@@ -65,7 +64,6 @@ int getNumRegister(int *cmdAddr) {
         return 2;
     } else
         return -1;
-    // TODO: gestisci IO su dispositivo non installato, dovrebbe ritornare -1, leggi pg29
 }
 
 void beginIO(int devnum, pcb_t *process) {
@@ -105,7 +103,9 @@ static devreg *findDevRegAddr(int device_type) {
     }
 
     if (isTermReg((memaddr) devreg_addr)) {
-        // TODO: commmento per spiegare sta cosa strusa
+        // se è un terminale, allora devo andare a vedere se è il trasmettitore o il ricevitore
+        // gestisco subito il caso in cui sia il trasmittitore, poi in una gestione dell'interrupt futura
+        // se è attivo solo il ricevitore, allora gestisco quello
         termdev_t *transmitter = (termdev_t *) (devreg_addr + sizeof(termdev_t) / sizeof(int));
         if ((transmitter->status & DEVICESTATUSMASK) == TRANSMITTED) {
             devreg_addr += sizeof(termdev_t) / sizeof(int);

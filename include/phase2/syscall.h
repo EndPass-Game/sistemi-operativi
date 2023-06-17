@@ -11,6 +11,8 @@ void syscallHandler();
  * @brief Questa system call crea un nuovo processo
  * come figlio del chiamante. Il primo parametro
  * contiene lo stato che deve avere il processo.
+ * 
+ * @param statep è un puntatore allo stato del processo
  *
  * @param supportp è un puntatore alla struttura di
  * supporto del processo
@@ -20,14 +22,7 @@ void syscallHandler();
  * namespace (NULL) verra’ ereditato quello del
  * padre.
  *
- * NOTE: Al momento della creazione di un processo
- * e’ necessario creare per questo un id
- * univoco che lo identifichi.
- * L’id puo’ essere (per esempio) un numero
- * progressivo non nullo (diverso da 0, basta che sia unico)
- * oppure l’indirizzo * della struttura pcb_t corrispondente.
- *
- * @return il pid del processo creato
+ * @return il pid del processo creato (indirizzo di memoria del pcb)
  */
 memaddr sysCreateProcess(state_t *statep, support_t *supportp, nsd_t *ns);
 
@@ -66,7 +61,7 @@ void sysVerhogen(int *semaddr);
  * CmdValues scrivendo il comando cmdValue nei registri
  * cmdAddr e seguenti, e mette in pausa il processo
  * chiamante fino a quando non si e’ conclusa.
- * –L’operazione è bloccante, quindi il chiamante viene sospeso
+ * – L’operazione è bloccante, quindi il chiamante viene sospeso
  * sino alla conclusione del comando. Il valore ritornato deve
  * essere zero se ha successo, -1 in caso di errore. Il contenuto
  * del registro di status del dispositivo potra’ essere letto nel
@@ -80,7 +75,7 @@ int sysDoIO(int *cmdAddr, int *cmdValues);
  * di esecuzione (in microsecondi) del processo che
  * l’ha chiamata fino a quel momento.
  *
- * Questa System call implica la registrazione del
+ * Questa system call implica la registrazione del
  * tempo passato durante l’esecuzione di un
  * processo.
  */
