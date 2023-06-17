@@ -20,7 +20,6 @@
 #include <pandos_types.h>
 #include <ns.h>
 #include <umps/libumps.h>
-#include "nucleus.h"
 
 typedef unsigned int devregtr;
 
@@ -339,10 +338,6 @@ void test() {
 
     SYSCALL(CREATEPROCESS, (int)&p11state, (int)NULL, (int)NULL); /* start p7		*/
     SYSCALL(PASSEREN, (int)&sem_p11, 0, 0);
-
-    g_debug[0] = g_process_count;
-    g_debug[1] = g_soft_block_count;
-
 
     print("p1 finishes OK -- TTFN\n");
     *((memaddr *)BADADDR) = 0; /* terminate p1 */
