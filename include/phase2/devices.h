@@ -19,7 +19,7 @@ void handleDeviceInt(int device_reg);
 
 /**
  * @brief Get the Num Register of corresponding object
- * 
+ *
  * @param cmdAddr address of register
  * @return int -1 if invalid, 2 if terminal, 4 if other device
  */
@@ -33,7 +33,7 @@ void beginIO(int devnum, pcb_t *process);
 
 /**
  * @brief ends IO for a device
- * 
+ *
  * @param devnum the device that ended IO
  */
 void endIO(int devnum);

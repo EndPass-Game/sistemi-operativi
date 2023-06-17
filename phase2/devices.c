@@ -16,11 +16,11 @@ int resolveDeviceAddress(memaddr memaddress) {
 
     if (memaddress < DEVREG_START_ADDR)
         return -1;  // non c'è nessun device associato
-    else if(memaddress >= DEVREG_START_ADDR &&  memaddress < TERMREG_START_ADDR)
-        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE; 
-    else if (memaddress >= TERMREG_START_ADDR && memaddress < TERMREG_END_ADDR) 
-        return (TERMREG_START_ADDR - DEVREG_START_ADDR) / DEVREGSIZE + 
-            (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE/2);
+    else if (memaddress >= DEVREG_START_ADDR && memaddress < TERMREG_START_ADDR)
+        return (memaddress - DEVREG_START_ADDR) / DEVREGSIZE;
+    else if (memaddress >= TERMREG_START_ADDR && memaddress < TERMREG_END_ADDR)
+        return (TERMREG_START_ADDR - DEVREG_START_ADDR) / DEVREGSIZE +
+               (memaddress - TERMREG_START_ADDR) / (DEVREGSIZE / 2);
     else
         return -1;  // nessun device oltre a quello
 }
@@ -28,7 +28,7 @@ int resolveDeviceAddress(memaddr memaddress) {
 int resolveSemAddr(memaddr semaddr) {
     if ((memaddr) semaddr >= (memaddr) &g_sysiostates[0] && (memaddr) semaddr < (memaddr) &g_sysiostates[DEVICE_NUMBER])
         return (semaddr - (memaddr) &g_sysiostates[0]) / sizeof(sysiostate_t);
-    else 
+    else
         return -1;
 }
 

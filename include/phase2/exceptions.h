@@ -13,11 +13,11 @@ void exceptionHandler();
 void passUpOrDie(int passupType);
 
 /**
- * @brief Get the Passed Time 
+ * @brief Get the Passed Time
  * returns the time passed since the last process started
  * and updates time of day
- * 
- * @return unsigned int 
+ *
+ * @return unsigned int
  */
 unsigned int getPassedTime();
 

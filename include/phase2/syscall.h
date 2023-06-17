@@ -11,7 +11,7 @@ void syscallHandler();
  * @brief Questa system call crea un nuovo processo
  * come figlio del chiamante. Il primo parametro
  * contiene lo stato che deve avere il processo.
- * 
+ *
  * @param statep è un puntatore allo stato del processo
  *
  * @param supportp è un puntatore alla struttura di

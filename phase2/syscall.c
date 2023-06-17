@@ -23,7 +23,7 @@ static void terminateProcess(pcb_t *pcb);
 
 /**
  * @brief Controlla se l'indirizzo di semaddr è un semaforo mut o sync di un device
- * 
+ *
  * @param semaddr
  */
 static bool isDeviceSemaphore(memaddr semaddr);
