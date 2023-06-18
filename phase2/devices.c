@@ -43,7 +43,7 @@ void handleDeviceInt(int device_type) {
     // tl;dr: -1 process killed before IO
     if (g_sysiostates[dev_num].sem_sync != -1) {
         endIO(dev_num);
-        setReturnValue(dev_num , devreg_addr);
+        setReturnValue(dev_num, devreg_addr);
     }
 
     ackDevice(devreg_addr);
@@ -131,18 +131,17 @@ static void setReturnValue(int dev_num, devreg *devreg_addr) {
     termdev_t *term_device = (termdev_t *) devreg_addr;
     if (isTermReg((memaddr) devreg_addr)) {
         // starei facendo 5 | 5, ma per chiarezza credo sia più corretto
-        if ((term_device->status &DEVICESTATUSMASK) == (TRANSMITTED | RECEIVED)) {
+        if ((term_device->status & DEVICESTATUSMASK) == (TRANSMITTED | RECEIVED)) {
             g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
         } else {
             g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = -1;
         }
     } else {
         // lo vedo come term_device, tanto mi serve solo lo stato
-        if ((term_device->status &DEVICESTATUSMASK) == READY) {
+        if ((term_device->status & DEVICESTATUSMASK) == READY) {
             g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = 0;
         } else {
             g_sysiostates[dev_num].waiting_process->p_s.reg_v0 = -1;
         }
     }
-
 }
